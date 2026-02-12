@@ -7,6 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -46,19 +50,21 @@
             transition: left 1.4s var(--ease), top 1.4s var(--ease), opacity 0.8s ease;
         }
         .cube-scene {
-            width: 250px;
-            height: 250px;
+            width: 320px;
+            height: 180px;
             perspective: 900px;
             transition: transform 1.4s var(--ease);
         }
         #cube-float.at-hero { left: 70%; top: 50%; }
         #cube-float.at-hero .cube-scene { transform: scale(1); }
         #cube-float.at-features { left: 24%; top: 50%; }
-        #cube-float.at-features .cube-scene { transform: scale(0.72); }
+        #cube-float.at-features .cube-scene { transform: scale(0.95); }
         #cube-float.at-center { left: 68%; top: 46%; }
-        #cube-float.at-center .cube-scene { transform: scale(0.85); }
-        #cube-float.at-footer { left: 50%; top: 45%; opacity: 0.12; }
-        #cube-float.at-footer .cube-scene { transform: scale(0.5); }
+        #cube-float.at-center .cube-scene { transform: scale(0.92); }
+        #cube-float.at-model { left: 50%; top: 50%; opacity: 0; pointer-events: none; }
+        #cube-float.at-model .cube-scene { transform: scale(0.3); }
+        #cube-float.at-footer { left: 50%; top: 50%; opacity: 0; pointer-events: none; }
+        #cube-float.at-footer .cube-scene { transform: scale(0.3); }
 
         /* ====== CUBE 3D ====== */
         .cube {
@@ -69,49 +75,53 @@
         }
         .face {
             position: absolute;
-            width: 250px;
-            height: 250px;
             backface-visibility: hidden;
-            border: 1px solid rgba(197,162,121,0.25);
-            background: rgba(36,40,77,0.85);
+            background: #000;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             font-size: 10px;
+            border: 3px solid #8F6827;
         }
-        .face.front  { transform: translateZ(125px); }
-        .face.back   { transform: rotateY(180deg) translateZ(125px); }
-        .face.right  { transform: rotateY(90deg) translateZ(125px); }
-        .face.left   { transform: rotateY(-90deg) translateZ(125px); }
-        .face.top    { transform: rotateX(90deg) translateZ(125px); }
-        .face.bottom { transform: rotateX(-90deg) translateZ(125px); }
+        /* Main faces: 320 x 180, offset by depth/2 = 45px */
+        .face.front, .face.back { width: 320px; height: 180px; border-left: 3px solid #24284D; border-right: 3px solid #5F2824; }
+        .face.front  { transform: translateZ(45px); }
+        .face.back   { transform: rotateY(180deg) translateZ(45px); border-left: 3px solid #5F2824; border-right: 3px solid #24284D; }
+        /* Side faces: 90 x 180, centered then offset by width/2 = 160px */
+        .face.right, .face.left { width: 90px; height: 180px; left: 115px; }
+        .face.right  { transform: rotateY(90deg) translateZ(160px); border: 3px solid #5F2824; border-top: 3px solid #8F6827; border-bottom: 3px solid #8F6827; }
+        .face.left   { transform: rotateY(-90deg) translateZ(160px); border: 3px solid #24284D; border-top: 3px solid #8F6827; border-bottom: 3px solid #8F6827; }
+        /* Top/Bottom: 320 x 90, centered then offset by height/2 = 90px */
+        .face.top, .face.bottom { width: 320px; height: 90px; top: 45px; }
+        .face.top    { transform: rotateX(90deg) translateZ(90px); border-left: 3px solid #24284D; border-right: 3px solid #5F2824; }
+        .face.bottom { transform: rotateX(-90deg) translateZ(90px); border-left: 3px solid #24284D; border-right: 3px solid #5F2824; }
 
         /* Face content */
         .face-title {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 9px;
+            font-size: 7px;
             font-weight: 700;
             color: var(--gold);
             letter-spacing: 2px;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             text-transform: uppercase;
         }
         .ft-row {
             display: flex;
             justify-content: space-between;
-            width: 80%;
-            padding: 2px 0;
+            width: 85%;
+            padding: 1px 0;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 9.5px;
+            font-size: 8px;
             border-bottom: 1px solid rgba(197,162,121,0.08);
         }
         .ft-row .s { color: var(--gold); }
         .ft-row .n { color: #7a8abf; }
         .ft-row .h { color: #6a9a6a; }
 
-        .face.right svg, .face.top svg { width: 90%; height: 90%; }
+        .face.right svg { width: 65%; }
 
         .face.back .formula-line {
             font-family: 'JetBrains Mono', monospace;
@@ -123,30 +133,9 @@
         .face.left {
             font-size: 11px;
             color: var(--text-muted);
-            gap: 6px;
-        }
-        .face.left .brand {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--gold);
-            letter-spacing: 2px;
-        }
-        .face.bottom {
-            background:
-                radial-gradient(circle, rgba(197,162,121,0.25) 1.2px, transparent 1.2px),
-                rgba(36,40,77,0.85);
-            background-size: 12px 12px;
+            gap: 4px;
         }
 
-        /* Cube glow */
-        .face::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border: 1px solid rgba(197,162,121,0.15);
-            box-shadow: inset 0 0 30px rgba(197,162,121,0.03);
-            pointer-events: none;
-        }
 
         /* ====== HERO ====== */
         #hero {
@@ -435,6 +424,249 @@
             max-width: 560px;
         }
 
+        /* ====== KATEX OVERRIDES ====== */
+        .katex { color: var(--gold); }
+        .katex .mord.text { color: var(--text-muted); }
+
+        /* ====== 3D VIEWER SECTION ====== */
+        #model-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+        #model-section h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #8F6827, #C5A279);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        #model-section .model-sub {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .model-container {
+            width: 90%;
+            max-width: 700px;
+            aspect-ratio: 4/3;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(197,162,121,0.15);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .model-container model-viewer {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            --poster-color: transparent;
+        }
+        .model-fullscreen-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(197,162,121,0.25);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--gold);
+            transition: background 0.3s;
+        }
+        .model-fullscreen-btn:hover { background: rgba(143,104,39,0.3); }
+        .model-hint {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            letter-spacing: 1px;
+        }
+
+        /* ====== GRAPH SECTION ====== */
+        #graph-section {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+        }
+        #graph-section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #8F6827, #C5A279);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        #graph-section .graph-sub {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .graph-container {
+            width: 90%;
+            max-width: 750px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(197,162,121,0.15);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+        .graph-container svg { width: 100%; height: auto; }
+        .graph-info {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .graph-info span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--gold);
+            padding: 0.5rem 1.2rem;
+            background: rgba(143,104,39,0.08);
+            border: 1px solid rgba(197,162,121,0.15);
+            border-radius: 8px;
+        }
+
+        /* ====== STATS SECTION ====== */
+        #stats-section {
+            min-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem;
+        }
+        #stats-section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #8F6827, #C5A279);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.4rem;
+            text-align: center;
+        }
+        #stats-section .stats-sub {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 90%;
+            max-width: 900px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(197,162,121,0.1);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+        }
+        #stats-section.is-visible .stat-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .stat-card .stat-visual {
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+        }
+        .stat-card .stat-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: var(--gold);
+            line-height: 1;
+        }
+        .stat-card .stat-unit {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+        .stat-card .stat-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+        .stat-card .stat-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        /* Ring chart */
+        .stat-ring { position: relative; width: 100px; height: 100px; }
+        .stat-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .stat-ring .ring-label {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+        /* Comparison bar */
+        .stat-bar-wrap { width: 100%; }
+        .stat-bar-item { margin-bottom: 0.8rem; }
+        .stat-bar-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+        .stat-bar-header .val {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .stat-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(197,162,121,0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            width: 0;
+            transition: width 1.8s var(--ease);
+        }
+        .stat-bar-fill.gold { background: linear-gradient(90deg, #8F6827, #C5A279); }
+        .stat-bar-fill.blue { background: linear-gradient(90deg, #24284D, #5566bb); }
+
         /* ====== RESPONSIVE ====== */
         @media (max-width: 768px) {
             #hero {
@@ -448,10 +680,10 @@
                 padding: 1.5rem 2rem;
             }
             #cube-float.at-hero { left: 50%; top: 62%; }
-            #cube-float.at-hero .cube-scene { transform: scale(0.7); }
-            #cube-float.at-features { left: 50%; top: 25%; }
-            #cube-float.at-features .cube-scene { transform: scale(0.5); }
-            #cube-float.at-center { left: 50%; top: 30%; }
+            #cube-float.at-hero .cube-scene { transform: scale(0.55); }
+            #cube-float.at-features { left: 50%; top: 22%; }
+            #cube-float.at-features .cube-scene { transform: scale(0.55); }
+            #cube-float.at-center { left: 50%; top: 28%; }
             #cube-float.at-center .cube-scene { transform: scale(0.55); }
 
             .feature { align-items: flex-end; padding-bottom: 6vh; }
@@ -470,6 +702,9 @@
             .cards { flex-direction: column; align-items: center; }
             .card { width: 85%; max-width: 280px; }
             .footer-inner { padding: 2rem 1.5rem; }
+            .stats-grid { grid-template-columns: 1fr; max-width: 340px; }
+            .stat-card .stat-number { font-size: 2.2rem; }
+            .model-container { width: 95%; aspect-ratio: 3/4; }
         }
 
         /* ====== MISC ====== */
@@ -486,74 +721,57 @@
         <div class="cube-scene">
             <div class="cube" id="cube">
 
-                <!-- FRONT: Month table -->
+                <!-- FRONT: Angle table (like Abraham's model) -->
                 <div class="face front">
-                    <div class="face-title">Angulos Optimos</div>
+                    <div class="face-title">&Aacute;ngulo Solar &Oacute;ptimo Panam&aacute;</div>
                     <div class="ft-row"><span>ENE</span><span class="s">30.3&deg; S</span></div>
-                    <div class="ft-row"><span>FEB</span><span class="s">22.3&deg; S</span></div>
+                    <div class="ft-row"><span>FEB</span><span class="s">22.8&deg; S</span></div>
                     <div class="ft-row"><span>MAR</span><span class="s">11.8&deg; S</span></div>
-                    <div class="ft-row"><span>ABR</span><span class="h">&nbsp;0.0&deg; &mdash;</span></div>
-                    <div class="ft-row"><span>MAY</span><span class="n">&nbsp;9.8&deg; N</span></div>
+                    <div class="ft-row"><span>ABR</span><span class="s">&nbsp;0.4&deg; S</span></div>
+                    <div class="ft-row"><span>MAY</span><span class="n">10.3&deg; N</span></div>
                     <div class="ft-row"><span>JUN</span><span class="n">14.3&deg; N</span></div>
-                    <div class="ft-row"><span>JUL</span><span class="n">12.5&deg; N</span></div>
-                    <div class="ft-row"><span>AGO</span><span class="n">&nbsp;4.5&deg; N</span></div>
+                    <div class="ft-row"><span>JUL</span><span class="n">12.1&deg; N</span></div>
+                    <div class="ft-row"><span>AGO</span><span class="n">&nbsp;3.6&deg; N</span></div>
                     <div class="ft-row"><span>SEP</span><span class="s">&nbsp;6.8&deg; S</span></div>
                     <div class="ft-row"><span>OCT</span><span class="s">19.5&deg; S</span></div>
-                    <div class="ft-row"><span>NOV</span><span class="s">28.2&deg; S</span></div>
+                    <div class="ft-row"><span>NOV</span><span class="s">28.5&deg; S</span></div>
                     <div class="ft-row"><span>DIC</span><span class="s">32.2&deg; S</span></div>
                 </div>
 
-                <!-- BACK: Formulas -->
+                <!-- BACK: Cuadro 1 - Angulo Optimo (image #11) -->
                 <div class="face back">
-                    <div class="face-title">Formulas</div>
-                    <div class="formula-line">&delta;(d) = 23.44&deg; &times; sen[&omega;(d-81)]</div>
-                    <div class="formula-line">&theta;(d) = 9&deg; - &delta;(d)</div>
-                    <div class="formula-line">E(&alpha;) = cos(&alpha; - &theta;)</div>
-                    <div class="formula-line" style="margin-top:12px;font-size:8px;color:var(--text-muted)">&omega; = 360&deg;/365</div>
+                    <div class="face-title">Cuadro 1: &Aacute;ngulo &Oacute;ptimo: T</div>
+                    <div style="width:70%;height:1px;background:rgba(197,162,121,0.2);margin:8px 0"></div>
+                    <div class="formula-line" style="font-size:12px;margin:6px 0">T = 9 &minus; 23.44 * sen(X)</div>
+                    <div style="width:70%;height:1px;background:rgba(197,162,121,0.2);margin:8px 0"></div>
+                    <div class="formula-line" style="font-size:10px;margin:6px 0">RANGO: &minus;14.4 a 32.4</div>
                 </div>
 
-                <!-- RIGHT: Sinusoidal curve -->
+                <!-- RIGHT (thin side, red tint): Formula -->
                 <div class="face right">
-                    <svg viewBox="0 0 250 250" fill="none">
-                        <text x="125" y="22" text-anchor="middle" fill="#C5A279" font-family="JetBrains Mono" font-size="9" font-weight="bold" letter-spacing="1.5">DECLINACION SOLAR</text>
-                        <line x1="25" y1="125" x2="225" y2="125" stroke="rgba(197,162,121,0.15)" stroke-width="0.5" stroke-dasharray="4,4"/>
-                        <line x1="25" y1="50" x2="225" y2="50" stroke="rgba(197,162,121,0.08)" stroke-width="0.5"/>
-                        <text x="22" y="53" fill="rgba(197,162,121,0.35)" font-size="7" text-anchor="end" font-family="JetBrains Mono">+23&deg;</text>
-                        <line x1="25" y1="200" x2="225" y2="200" stroke="rgba(197,162,121,0.08)" stroke-width="0.5"/>
-                        <text x="22" y="203" fill="rgba(197,162,121,0.35)" font-size="7" text-anchor="end" font-family="JetBrains Mono">-23&deg;</text>
-                        <polyline points="25,200 35,196 45,186 55,169 65,148 75,125 85,102 95,81 105,64 115,54 125,50 135,54 145,64 155,81 165,102 175,125 185,148 195,169 205,186 215,196 225,200" stroke="#C5A279" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="125" cy="50" r="3" fill="#C5A279"/>
-                        <text x="125" y="240" text-anchor="middle" fill="rgba(197,162,121,0.3)" font-size="7" font-family="JetBrains Mono">E F M A M J J A S O N D</text>
+                    <div class="formula-line" style="font-size:7px;margin:2px 0">&theta; = 9 &minus; 23.44</div>
+                    <div class="formula-line" style="font-size:7px;margin:1px 0">&times; sen(x)</div>
+                    <svg viewBox="0 0 70 80" fill="none" style="width:65%;margin-top:4px">
+                        <polyline points="5,65 15,58 25,42 35,25 45,18 55,25 65,50" stroke="#C5A279" stroke-width="1.5" stroke-linecap="round" fill="none"/>
                     </svg>
                 </div>
 
-                <!-- LEFT: Team info -->
+                <!-- LEFT (thin side, blue tint): N/S indicator -->
                 <div class="face left">
-                    <div class="brand">SC</div>
-                    <div style="width:40px;height:1px;background:var(--gold);opacity:0.3"></div>
-                    <span>Obed</span>
-                    <span>Jerem&iacute;as</span>
-                    <span>Abraham</span>
-                    <div style="width:40px;height:1px;background:var(--gold);opacity:0.3"></div>
-                    <span style="font-size:8px;letter-spacing:1px">ULP 2026-1</span>
+                    <span style="font-size:14px;font-weight:800;color:#5566bb">N</span>
+                    <div style="width:2px;height:30px;background:linear-gradient(#5566bb,#cc3333);margin:4px 0;border-radius:1px"></div>
+                    <span style="font-size:14px;font-weight:800;color:#cc3333">S</span>
                 </div>
 
-                <!-- TOP: Inclinometer -->
+                <!-- TOP: Project label -->
                 <div class="face top">
-                    <svg viewBox="0 0 250 250" fill="none">
-                        <text x="125" y="30" text-anchor="middle" fill="#C5A279" font-family="JetBrains Mono" font-size="9" font-weight="bold" letter-spacing="1.5">INCLINOMETRO</text>
-                        <path d="M 35,200 A 90,90 0 0,1 215,200" stroke="rgba(197,162,121,0.12)" stroke-width="14" stroke-linecap="round"/>
-                        <path d="M 35,200 A 90,90 0 0,1 215,200" stroke="rgba(197,162,121,0.3)" stroke-width="1.5"/>
-                        <text x="30" y="220" fill="rgba(197,162,121,0.4)" font-size="8" font-family="JetBrains Mono" text-anchor="middle">-15&deg;</text>
-                        <text x="125" y="100" fill="rgba(197,162,121,0.4)" font-size="8" font-family="JetBrains Mono" text-anchor="middle">10&deg;</text>
-                        <text x="220" y="220" fill="rgba(197,162,121,0.4)" font-size="8" font-family="JetBrains Mono" text-anchor="middle">35&deg;</text>
-                        <circle cx="155" cy="118" r="7" fill="#C5A279"/>
-                        <circle cx="155" cy="118" r="10" fill="none" stroke="rgba(197,162,121,0.2)" stroke-width="1"/>
-                    </svg>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:6px;color:var(--gold);letter-spacing:1px;text-transform:uppercase">U. Latina de Panam&aacute; &middot; C&aacute;lculo 2026-1</span>
                 </div>
 
-                <!-- BOTTOM: Grip texture -->
-                <div class="face bottom"></div>
+                <!-- BOTTOM: Team -->
+                <div class="face bottom">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:6px;color:var(--text-muted);letter-spacing:1px">Obed &middot; Abraham &middot; Jerem&iacute;as</span>
+                </div>
             </div>
         </div>
     </div>
@@ -578,7 +796,8 @@
             <div class="feature-content">
                 <h2>Funciones que predicen el sol</h2>
                 <p>La declinaci&oacute;n solar sigue una funci&oacute;n sinusoidal con per&iacute;odo de 365 d&iacute;as. Nuestro dispositivo traduce esta funci&oacute;n en una herramienta que cabe en tu mano.</p>
-                <div class="formula">&delta;(d) = 23.44&deg; &times; sen[(360/365) &times; (d - 81)]</div>
+                <div class="formula">$$\delta(d) = 23.44° \times \sin\!\left[\frac{360°}{365} \times (d - 81)\right]$$</div>
+                <div class="formula" style="margin-top:0.8rem">$$\theta(d) = \underbrace{9°}_{\text{lat. Panamá}} - \delta(d)$$</div>
             </div>
         </section>
 
@@ -605,10 +824,11 @@
         </section>
 
         <!-- FEATURE 3: Limits -->
-        <section id="feat-limits" class="feature" data-face="top" data-pos="features">
+        <section id="feat-limits" class="feature" data-face="back" data-pos="features">
             <div class="feature-content">
                 <h2>Los l&iacute;mites definen los bordes</h2>
                 <p>Cuando el &aacute;ngulo de incidencia se acerca a 90&deg;, la eficiencia tiende a cero. Este l&iacute;mite matem&aacute;tico es la raz&oacute;n por la que cada grado importa.</p>
+                <div class="formula" style="margin-bottom:1rem">$$\lim_{\alpha \to 90°} \cos(\alpha) = 0$$</div>
                 <div class="arc-wrapper">
                     <svg class="arc-svg" viewBox="0 0 200 130">
                         <path d="M 20,110 A 80,80 0 0,1 180,110" stroke="rgba(197,162,121,0.1)" fill="none" stroke-width="6" stroke-linecap="round"/>
@@ -644,6 +864,95 @@
                     <span class="card-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A279" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></span>
                     <h3>Impacto real</h3>
                     <p>Hasta 20% m&aacute;s eficiencia solar con el &aacute;ngulo correcto.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3D MODEL VIEWER -->
+        <section id="model-section" data-pos="model">
+            <h2>Expl&oacute;ralo en 3D</h2>
+            <p class="model-sub">El modelo real dise&ntilde;ado por Abraham. Arrastra para rotar.</p>
+            <div class="model-container">
+                <button class="model-fullscreen-btn" onclick="toggleModelFullscreen()" aria-label="Pantalla completa">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+                </button>
+                <model-viewer id="model-interactive"
+                    src="model.glb"
+                    camera-controls
+                    auto-rotate
+                    auto-rotate-delay="2000"
+                    rotation-per-second="12deg"
+                    camera-orbit="30deg 75deg auto"
+                    shadow-intensity="0.3"
+                    exposure="1.1"
+                    interaction-prompt="auto"
+                    ar-status="not-presenting"
+                ></model-viewer>
+            </div>
+            <p class="model-hint">&#x21C4; Arrastra &middot; &#x1F50D; Pinch para zoom</p>
+        </section>
+
+        <!-- GRAPH -->
+        <section id="graph-section">
+            <h2>&Aacute;ngulo &oacute;ptimo a lo largo del a&ntilde;o</h2>
+            <p class="graph-sub">$$f(x) = 9 - 23.44 \cdot \sin\!\left(\frac{360°}{365}(x - 81)\right)$$</p>
+            <div class="graph-container">
+                <svg id="graph-svg" viewBox="0 0 700 350"></svg>
+            </div>
+            <div class="graph-info">
+                <span>Dominio: [0, 365]</span>
+                <span>Rango: [&minus;14.4, 32.4]</span>
+            </div>
+        </section>
+
+        <!-- STATS -->
+        <section id="stats-section">
+            <h2>El contexto global</h2>
+            <p class="stats-sub">Por qu&eacute; cada grado de inclinaci&oacute;n importa.</p>
+            <div class="stats-grid">
+                <!-- Card 1: Panama -->
+                <div class="stat-card" style="transition-delay:0s">
+                    <div class="stat-visual">
+                        <div class="stat-bar-wrap">
+                            <div class="stat-bar-item">
+                                <div class="stat-bar-header"><span>Panam&aacute;</span><span class="val" id="counter-panama">0 MW</span></div>
+                                <div class="stat-bar"><div class="stat-bar-fill gold" id="bar-panama"></div></div>
+                            </div>
+                            <div class="stat-bar-item">
+                                <div class="stat-bar-header"><span>Mundo</span><span class="val" id="counter-world">0 TW</span></div>
+                                <div class="stat-bar"><div class="stat-bar-fill blue" id="bar-world"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-label">Capacidad solar instalada</div>
+                    <div class="stat-desc">Panam&aacute; tiene ~884 MW frente a los ~2.5&ndash;3 TW acumulados globalmente.</div>
+                </div>
+
+                <!-- Card 2: Fixed systems ring -->
+                <div class="stat-card" style="transition-delay:.15s">
+                    <div class="stat-visual">
+                        <div class="stat-ring">
+                            <svg viewBox="0 0 36 36">
+                                <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(197,162,121,0.08)" stroke-width="3"/>
+                                <circle id="ring-fixed" cx="18" cy="18" r="15.5" fill="none" stroke="#C5A279" stroke-width="3" stroke-linecap="round" stroke-dasharray="97.4" stroke-dashoffset="97.4"/>
+                            </svg>
+                            <span class="ring-label" id="ring-pct">0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-label">Sistemas fijos</div>
+                    <div class="stat-desc">60&ndash;70% de los paneles del mundo no se auto-acomodan al sol.</div>
+                </div>
+
+                <!-- Card 3: Efficiency gain -->
+                <div class="stat-card" style="transition-delay:.3s">
+                    <div class="stat-visual">
+                        <div>
+                            <div class="stat-number" id="counter-gain">0</div>
+                            <div class="stat-unit">% m&aacute;s eficiencia</div>
+                        </div>
+                    </div>
+                    <div class="stat-label">&Aacute;ngulo correcto</div>
+                    <div class="stat-desc">La orientaci&oacute;n &oacute;ptima puede aumentar la captaci&oacute;n hasta un 20%.</div>
                 </div>
             </div>
         </section>
@@ -693,10 +1002,10 @@
         function tick() {
             if (state.idle) {
                 state.ry += state.speed;
-                state.rx += (-15 - state.rx) * 0.03;
+                state.rx += (-15 - state.rx) * 0.05;
             } else {
-                state.rx += (state.tx - state.rx) * 0.06;
-                state.ry += (state.ty - state.ry) * 0.06;
+                state.rx += (state.tx - state.rx) * 0.10;
+                state.ry += (state.ty - state.ry) * 0.10;
             }
             cube.style.transform = 'rotateX(' + state.rx + 'deg) rotateY(' + state.ry + 'deg)';
             requestAnimationFrame(tick);
@@ -709,7 +1018,7 @@
         }
 
         // ====== OBSERVERS ====== //
-        const sections = document.querySelectorAll('#hero, .feature, #feat-panama, #footer');
+        const sections = document.querySelectorAll('#hero, .feature, #feat-panama, #model-section, #footer');
 
         // 1) One-time CSS animation triggers
         var animObs = new IntersectionObserver(function(entries) {
@@ -722,7 +1031,7 @@
         }, { threshold: [0.15] });
         sections.forEach(function(s) { animObs.observe(s); });
 
-        // 2) Scroll-based cube position (early trigger, bidirectional)
+        // 2) Scroll-based cube position (top-proximity, symmetric bidirectional)
         var cubeRaf = null;
         var lastActiveId = 'hero';
         window.addEventListener('scroll', function() {
@@ -730,13 +1039,18 @@
             cubeRaf = requestAnimationFrame(function() {
                 cubeRaf = null;
                 var vh = window.innerHeight;
-                var trigger = vh * 0.65;
+                var refLine = vh * 0.20;
                 var best = null;
+                var bestDist = Infinity;
 
-                // Pick the last section whose top has crossed the 65% viewport line
+                // Find which section's top is closest to the reference line
                 sections.forEach(function(s) {
                     var r = s.getBoundingClientRect();
-                    if (r.top < trigger) best = s;
+                    var dist = Math.abs(r.top - refLine);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        best = s;
+                    }
                 });
 
                 if (!best) best = sections[0];
@@ -794,6 +1108,166 @@
 
         // Fallback if fonts take too long
         setTimeout(function() { document.body.classList.add('loaded'); }, 1500);
+
+        // ====== KATEX AUTO-RENDER ====== //
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+
+        // ====== GRAPH GENERATION ====== //
+        (function() {
+            var svg = document.getElementById('graph-svg');
+            var W = 700, H = 350;
+            var pad = { top: 30, right: 30, bottom: 50, left: 60 };
+            var gW = W - pad.left - pad.right;
+            var gH = H - pad.top - pad.bottom;
+            var xMin = 0, xMax = 365, yMin = -20, yMax = 38;
+
+            function xScale(v) { return pad.left + (v - xMin) / (xMax - xMin) * gW; }
+            function yScale(v) { return pad.top + (yMax - v) / (yMax - yMin) * gH; }
+            function f(x) { return 9 - 23.44 * Math.sin((360 / 365) * (x - 81) * Math.PI / 180); }
+
+            var ns = 'http://www.w3.org/2000/svg';
+            function el(tag, attrs) {
+                var e = document.createElementNS(ns, tag);
+                for (var k in attrs) e.setAttribute(k, attrs[k]);
+                return e;
+            }
+
+            // Grid lines
+            for (var y = -15; y <= 35; y += 5) {
+                svg.appendChild(el('line', { x1: pad.left, y1: yScale(y), x2: W - pad.right, y2: yScale(y), stroke: 'rgba(197,162,121,0.08)', 'stroke-width': 1 }));
+                if (y % 10 === 0) svg.appendChild(el('text', { x: pad.left - 8, y: yScale(y) + 4, fill: 'rgba(197,162,121,0.4)', 'font-size': '11', 'font-family': 'JetBrains Mono', 'text-anchor': 'end' })).textContent = y + '\u00B0';
+            }
+            var months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            var mDays = [15,46,74,105,135,166,196,227,258,288,319,349];
+            for (var m = 0; m < 12; m++) {
+                var mx = xScale(mDays[m]);
+                svg.appendChild(el('line', { x1: mx, y1: pad.top, x2: mx, y2: H - pad.bottom, stroke: 'rgba(197,162,121,0.06)', 'stroke-width': 1 }));
+                svg.appendChild(el('text', { x: mx, y: H - pad.bottom + 18, fill: 'rgba(197,162,121,0.5)', 'font-size': '10', 'font-family': 'JetBrains Mono', 'text-anchor': 'middle' })).textContent = months[m];
+            }
+
+            // Axes
+            svg.appendChild(el('line', { x1: pad.left, y1: H - pad.bottom, x2: W - pad.right, y2: H - pad.bottom, stroke: 'rgba(197,162,121,0.25)', 'stroke-width': 1.5 }));
+            svg.appendChild(el('line', { x1: pad.left, y1: pad.top, x2: pad.left, y2: H - pad.bottom, stroke: 'rgba(197,162,121,0.25)', 'stroke-width': 1.5 }));
+            // Axis labels
+            svg.appendChild(el('text', { x: W / 2, y: H - 5, fill: 'rgba(197,162,121,0.5)', 'font-size': '11', 'font-family': 'JetBrains Mono', 'text-anchor': 'middle' })).textContent = 'D\u00EDa del a\u00F1o (x)';
+            svg.appendChild(el('text', { x: 14, y: pad.top - 10, fill: 'rgba(197,162,121,0.5)', 'font-size': '11', 'font-family': 'JetBrains Mono', 'text-anchor': 'start' })).textContent = '\u03B8\u00B0';
+
+            // Zero line
+            svg.appendChild(el('line', { x1: pad.left, y1: yScale(0), x2: W - pad.right, y2: yScale(0), stroke: 'rgba(197,162,121,0.15)', 'stroke-width': 1, 'stroke-dasharray': '6,4' }));
+            // 9° line (latitude)
+            svg.appendChild(el('line', { x1: pad.left, y1: yScale(9), x2: W - pad.right, y2: yScale(9), stroke: 'rgba(143,104,39,0.25)', 'stroke-width': 1, 'stroke-dasharray': '3,3' }));
+            svg.appendChild(el('text', { x: W - pad.right + 4, y: yScale(9) + 4, fill: 'rgba(197,162,121,0.35)', 'font-size': '9', 'font-family': 'JetBrains Mono' })).textContent = '9\u00B0 lat';
+
+            // Curve
+            var pts = [];
+            for (var x = 0; x <= 365; x += 2) pts.push(xScale(x).toFixed(1) + ',' + yScale(f(x)).toFixed(1));
+            svg.appendChild(el('polyline', { points: pts.join(' '), fill: 'none', stroke: '#C5A279', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+
+            // Key points
+            var keyPts = [
+                { x: 0, label: '32.1\u00B0' },
+                { x: 81, label: '9\u00B0' },
+                { x: 172, label: '-14.4\u00B0' },
+                { x: 265, label: '9\u00B0' },
+                { x: 355, label: '32.4\u00B0' }
+            ];
+            keyPts.forEach(function(p) {
+                var cx = xScale(p.x), cy = yScale(f(p.x));
+                svg.appendChild(el('circle', { cx: cx, cy: cy, r: 4, fill: '#C5A279' }));
+                svg.appendChild(el('circle', { cx: cx, cy: cy, r: 7, fill: 'none', stroke: 'rgba(197,162,121,0.3)', 'stroke-width': 1 }));
+                svg.appendChild(el('text', { x: cx, y: cy - 12, fill: '#C5A279', 'font-size': '10', 'font-family': 'JetBrains Mono', 'text-anchor': 'middle', 'font-weight': 'bold' })).textContent = p.label;
+            });
+
+            // Fill areas (N/S)
+            var northPts = [], southPts = [];
+            for (var x = 0; x <= 365; x += 2) {
+                var val = f(x);
+                if (val < 0) {
+                    northPts.push(xScale(x).toFixed(1) + ',' + yScale(val).toFixed(1));
+                }
+            }
+            // North fill (below 0)
+            if (northPts.length) {
+                var x1 = xScale(81), x2 = xScale(265), y0 = yScale(0);
+                var fillPts = x1.toFixed(1) + ',' + y0.toFixed(1) + ' ' + northPts.join(' ') + ' ' + x2.toFixed(1) + ',' + y0.toFixed(1);
+                svg.appendChild(el('polygon', { points: fillPts, fill: 'rgba(90,120,200,0.08)', stroke: 'none' }));
+            }
+        })();
+
+        // ====== STATS ANIMATION ====== //
+        var statsDone = false;
+        var statsObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.15) {
+                    entry.target.classList.add('is-visible');
+                    if (!statsDone) { statsDone = true; animateStats(); }
+                }
+            });
+        }, { threshold: [0.15] });
+        statsObs.observe(document.getElementById('stats-section'));
+
+        function animateStats() {
+            var dur = 2200;
+            var start = null;
+
+            var cPanama = document.getElementById('counter-panama');
+            var cWorld = document.getElementById('counter-world');
+            var barPanama = document.getElementById('bar-panama');
+            var barWorld = document.getElementById('bar-world');
+            var ringEl = document.getElementById('ring-fixed');
+            var ringPct = document.getElementById('ring-pct');
+            var cGain = document.getElementById('counter-gain');
+
+            function step(ts) {
+                if (!start) start = ts;
+                var p = Math.min((ts - start) / dur, 1);
+                var e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+
+                // Panama counter: 0 → 884 MW
+                var pVal = Math.round(e * 884);
+                cPanama.textContent = pVal + ' MW';
+
+                // World counter: 0 → 2.8 TW
+                var wVal = (e * 2.8).toFixed(1);
+                cWorld.textContent = wVal + ' TW';
+
+                // Bars: Panama gets ~30% width (visual proportion), World 100%
+                barPanama.style.width = (e * 30) + '%';
+                barWorld.style.width = (e * 100) + '%';
+
+                // Ring: 0 → 65% (midpoint of 60-70%)
+                var pct = Math.round(e * 65);
+                var circumference = 97.4;
+                ringEl.style.strokeDashoffset = circumference * (1 - (e * 0.65));
+                ringPct.textContent = pct + '%';
+
+                // Gain counter: 0 → 20
+                cGain.textContent = Math.round(e * 20);
+
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // ====== 3D MODEL FULLSCREEN ====== //
+        function toggleModelFullscreen() {
+            var container = document.querySelector('.model-container');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(function() {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
     </script>
 </body>
 </html>

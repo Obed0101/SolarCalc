@@ -15,6 +15,9 @@ Thumbs.db
 node_modules/
 bun.lockb
 
+# Netlify
+.netlify/
+
 # Environment
 .env
 .env.local
