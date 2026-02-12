@@ -705,6 +705,81 @@
             .stats-grid { grid-template-columns: 1fr; max-width: 340px; }
             .stat-card .stat-number { font-size: 2.2rem; }
             .model-container { width: 95%; aspect-ratio: 3/4; }
+            #side-indicator { display: none; }
+            #cursor-glow { display: none; }
+        }
+
+        /* ====== CURSOR GLOW ====== */
+        #cursor-glow {
+            position: fixed;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(197,162,121,0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.4s ease;
+            opacity: 0;
+        }
+        body.loaded #cursor-glow { opacity: 1; }
+
+        /* ====== SIDE INDICATOR ====== */
+        #side-indicator {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0;
+            pointer-events: none;
+        }
+        .si-pill {
+            background: rgba(10,10,15,0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(197,162,121,0.1);
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            padding: 0.6rem 0.8rem 0.6rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.15rem;
+            min-width: 80px;
+        }
+        .si-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gold);
+            line-height: 1.2;
+        }
+        .si-label {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .si-divider {
+            width: 30px;
+            height: 1px;
+            background: rgba(197,162,121,0.12);
+            margin: 0.2rem 0;
+            align-self: flex-end;
+        }
+
+        /* ====== COPYRIGHT ====== */
+        .copyright {
+            text-align: center;
+            padding: 1.5rem 2rem;
+            font-size: 0.7rem;
+            color: rgba(197,162,121,0.25);
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(197,162,121,0.05);
         }
 
         /* ====== MISC ====== */
@@ -715,6 +790,22 @@
     </style>
 </head>
 <body>
+
+    <!-- ====== CURSOR GLOW ====== -->
+    <div id="cursor-glow"></div>
+
+    <!-- ====== SIDE INDICATOR ====== -->
+    <div id="side-indicator">
+        <div class="si-pill">
+            <span class="si-val" id="si-angle">--</span>
+            <span class="si-label">&aacute;ngulo hoy</span>
+        </div>
+        <div class="si-divider"></div>
+        <div class="si-pill">
+            <span class="si-val" id="si-month">--</span>
+            <span class="si-label" id="si-time">--:--</span>
+        </div>
+    </div>
 
     <!-- ====== CUBE OVERLAY ====== -->
     <div id="cube-float" class="at-hero">
@@ -966,6 +1057,8 @@
                 <p>Universidad Latina de Panam&aacute;</p>
             </div>
         </footer>
+
+        <div class="copyright">&copy; 2026 SolarCalc &mdash; Universidad Latina de Panam&aacute;. Todos los derechos reservados.</div>
 
     </main>
 
@@ -1258,6 +1351,44 @@
             }
             requestAnimationFrame(step);
         }
+
+        // ====== CURSOR GLOW ====== //
+        var glow = document.getElementById('cursor-glow');
+        var glowX = 0, glowY = 0, glowTX = 0, glowTY = 0;
+        document.addEventListener('mousemove', function(e) {
+            glowTX = e.clientX;
+            glowTY = e.clientY;
+        });
+        (function glowTick() {
+            glowX += (glowTX - glowX) * 0.12;
+            glowY += (glowTY - glowY) * 0.12;
+            glow.style.left = glowX + 'px';
+            glow.style.top = glowY + 'px';
+            requestAnimationFrame(glowTick);
+        })();
+
+        // ====== SIDE INDICATOR ====== //
+        function updateSideIndicator() {
+            var now = new Date();
+            var start = new Date(now.getFullYear(), 0, 0);
+            var diff = now - start;
+            var dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            // f(x) = 9 - 23.44 * sin((360/365)(x-81)°)
+            var angle = 9 - 23.44 * Math.sin((360 / 365) * (dayOfYear - 81) * Math.PI / 180);
+            var dir = angle >= 0 ? 'S' : 'N';
+
+            document.getElementById('si-angle').textContent = Math.abs(angle).toFixed(1) + '\u00B0 ' + dir;
+
+            var meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            document.getElementById('si-month').textContent = meses[now.getMonth()] + ' ' + now.getDate();
+
+            var h = String(now.getHours()).padStart(2, '0');
+            var m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('si-time').textContent = h + ':' + m + ' \u00b7 d\u00eda ' + dayOfYear;
+        }
+        updateSideIndicator();
+        setInterval(updateSideIndicator, 30000);
 
         // ====== 3D MODEL FULLSCREEN ====== //
         function toggleModelFullscreen() {
