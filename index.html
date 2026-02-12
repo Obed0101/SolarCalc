@@ -47,7 +47,7 @@
             z-index: 50;
             pointer-events: none;
             transform: translate(-50%, -50%);
-            transition: left 1.4s var(--ease), top 1.4s var(--ease), opacity 0.8s ease;
+            transition: left 1.4s var(--ease), top 1.4s var(--ease);
         }
         .cube-scene {
             width: 320px;
@@ -145,15 +145,33 @@
             padding: 0 8%;
             position: relative;
         }
+        .hero-brand {
+            display: flex;
+            align-items: center;
+            gap: clamp(0.6rem, 1.5vw, 1rem);
+        }
+        .hero-logo {
+            width: clamp(2.8rem, 7vw, 4.5rem);
+            height: clamp(2.8rem, 7vw, 4.5rem);
+            flex-shrink: 0;
+        }
         .hero-title {
             font-size: clamp(3rem, 8vw, 5.5rem);
             font-weight: 900;
             letter-spacing: -2px;
+            line-height: 1;
+        }
+        .hero-title .solar {
             background: linear-gradient(135deg, #8F6827 0%, #C5A279 50%, #dcc9a8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.1;
+        }
+        .hero-title .calc {
+            font-weight: 300;
+            -webkit-text-fill-color: initial;
+            color: var(--text);
+            letter-spacing: -1px;
         }
         .hero-sub {
             margin-top: 1rem;
@@ -705,7 +723,9 @@
             .stats-grid { grid-template-columns: 1fr; max-width: 340px; }
             .stat-card .stat-number { font-size: 2.2rem; }
             .model-container { width: 95%; aspect-ratio: 3/4; }
-            #side-indicator { display: none; }
+            #toolbox { bottom: 1rem; left: 1rem; }
+            #toolbox-btn { width: 36px; height: 36px; }
+            #toolbox-panel { min-width: 170px; }
             #cursor-glow { display: none; }
         }
 
@@ -724,52 +744,93 @@
         }
         body.loaded #cursor-glow { opacity: 1; }
 
-        /* ====== SIDE INDICATOR ====== */
-        #side-indicator {
+        /* ====== TOOLBOX ====== */
+        #toolbox {
             position: fixed;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 90;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            z-index: 100;
+        }
+        #toolbox-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid rgba(197,162,121,0.2);
+            background: rgba(10,10,15,0.6);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            cursor: pointer;
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 0;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            transition: background 0.3s, border-color 0.3s, transform 0.3s;
+        }
+        #toolbox:hover #toolbox-btn,
+        #toolbox.open #toolbox-btn {
+            background: rgba(143,104,39,0.15);
+            border-color: rgba(197,162,121,0.35);
+            transform: scale(1.05);
+        }
+        #toolbox-panel {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 0;
+            min-width: 195px;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(197,162,121,0.12);
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+            opacity: 0;
+            transform: translateY(8px) scale(0.95);
             pointer-events: none;
-        }
-        .si-pill {
-            background: rgba(10,10,15,0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(197,162,121,0.1);
-            border-right: none;
-            border-radius: 10px 0 0 10px;
-            padding: 0.6rem 0.8rem 0.6rem 1rem;
+            transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            gap: 0.15rem;
-            min-width: 80px;
+            gap: 0.7rem;
         }
-        .si-val {
+        #toolbox:hover #toolbox-panel,
+        #toolbox.open #toolbox-panel {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .tb-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .tb-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(197,162,121,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .tb-icon svg { width: 14px; height: 14px; }
+        .tb-info { display: flex; flex-direction: column; }
+        .tb-val {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--gold);
             line-height: 1.2;
         }
-        .si-label {
-            font-size: 0.55rem;
+        .tb-label {
+            font-size: 0.6rem;
             color: var(--text-muted);
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
-        .si-divider {
-            width: 30px;
+        .tb-sep {
+            width: 100%;
             height: 1px;
-            background: rgba(197,162,121,0.12);
-            margin: 0.2rem 0;
-            align-self: flex-end;
+            background: rgba(197,162,121,0.08);
         }
 
         /* ====== COPYRIGHT ====== */
@@ -791,20 +852,59 @@
 </head>
 <body>
 
+    <!-- Shared SVG gradient defs -->
+    <svg style="position:absolute;width:0;height:0" aria-hidden="true">
+        <defs>
+            <linearGradient id="sc-grad1" x1="3.87" x2="20.13" y1="3.87" y2="20.13" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#C5A279" stop-opacity=".7"/>
+                <stop offset="1" stop-color="#8F6827" stop-opacity=".5"/>
+            </linearGradient>
+            <linearGradient id="sc-grad2" x1="3.87" x2="20.13" y1="3.87" y2="20.13" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#C5A279" stop-opacity=".8"/>
+                <stop offset=".5" stop-color="#8F6827" stop-opacity=".2"/>
+                <stop offset="1" stop-color="#C5A279" stop-opacity=".5"/>
+            </linearGradient>
+            <linearGradient id="sc-grad3" x1="8.47" x2="15.54" y1="8.47" y2="15.54" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#dcc9a8" stop-opacity=".9"/>
+                <stop offset=".5" stop-color="#C5A279" stop-opacity=".7"/>
+                <stop offset="1" stop-color="#8F6827" stop-opacity=".8"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
     <!-- ====== CURSOR GLOW ====== -->
     <div id="cursor-glow"></div>
 
-    <!-- ====== SIDE INDICATOR ====== -->
-    <div id="side-indicator">
-        <div class="si-pill">
-            <span class="si-val" id="si-angle">--</span>
-            <span class="si-label">&aacute;ngulo hoy</span>
+    <!-- ====== TOOLBOX ====== -->
+    <div id="toolbox">
+        <div id="toolbox-panel">
+            <div class="tb-row">
+                <div class="tb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#C5A279" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+                <div class="tb-info">
+                    <span class="tb-val" id="si-angle">--</span>
+                    <span class="tb-label">&aacute;ngulo &oacute;ptimo hoy</span>
+                </div>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-row">
+                <div class="tb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#C5A279" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+                <div class="tb-info">
+                    <span class="tb-val" id="si-month">--</span>
+                    <span class="tb-label" id="si-time">--:--</span>
+                </div>
+            </div>
+            <div class="tb-sep"></div>
+            <div class="tb-row">
+                <div class="tb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#C5A279" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                <div class="tb-info">
+                    <span class="tb-val">9&deg;N</span>
+                    <span class="tb-label">Panam&aacute;</span>
+                </div>
+            </div>
         </div>
-        <div class="si-divider"></div>
-        <div class="si-pill">
-            <span class="si-val" id="si-month">--</span>
-            <span class="si-label" id="si-time">--:--</span>
-        </div>
+        <button id="toolbox-btn" aria-label="Info solar">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="url(#sc-grad1)" fill-rule="evenodd" d="M10.925,1.193C11.116,0.771,11.537,0.5,12,0.5s0.884,0.271,1.075,0.693l1.167,2.578c0.165,0.365,0.463,0.653,0.833,0.806c0.37,0.153,0.784,0.16,1.159,0.019l2.648-0.997c0.434-0.163,0.923-0.058,1.25,0.27c0.328,0.328,0.433,0.817,0.27,1.25l-0.997,2.648c-0.141,0.375-0.134,0.789,0.019,1.159c0.153,0.37,0.441,0.667,0.806,0.833l2.578,1.167C23.229,11.116,23.5,11.537,23.5,12s-0.271,0.884-0.693,1.075l-2.578,1.167c-0.365,0.165-0.653,0.463-0.806,0.833c-0.153,0.37-0.16,0.784-0.019,1.159l0.997,2.648c0.163,0.434,0.058,0.923-0.27,1.25c-0.328,0.328-0.817,0.433-1.25,0.27l-2.648-0.997c-0.375-0.141-0.789-0.134-1.159,0.019c-0.37,0.153-0.667,0.441-0.833,0.806l-1.167,2.578C12.884,23.229,12.463,23.5,12,23.5s-0.884-0.271-1.075-0.693l-1.167-2.578c-0.165-0.365-0.463-0.653-0.833-0.806c-0.37-0.153-0.784-0.16-1.159-0.019l-2.648,0.997c-0.434,0.163-0.923,0.058-1.25-0.27s-0.433-0.817-0.27-1.25l0.997-2.648c0.141-0.375,0.134-0.789-0.019-1.159c-0.153-0.37-0.441-0.667-0.806-0.833l-2.578-1.167C0.771,12.884,0.5,12.463,0.5,12s0.271-0.884,0.693-1.075l2.578-1.167c0.365-0.165,0.653-0.463,0.806-0.833c0.153-0.37,0.16-0.784,0.019-1.159L3.598,5.118c-0.163-0.434-0.058-0.923,0.27-1.25c0.328-0.328,0.817-0.433,1.25-0.27l2.648,0.997C8.141,4.737,8.555,4.73,8.925,4.577c0.37-0.153,0.667-0.441,0.833-0.806L10.925,1.193z" clip-rule="evenodd"/><path fill="url(#sc-grad3)" d="M17,12c0,2.761-2.239,5-5,5s-5-2.239-5-5s2.239-5,5-5C14.761,7,17,9.239,17,12"/></svg>
+        </button>
     </div>
 
     <!-- ====== CUBE OVERLAY ====== -->
@@ -873,7 +973,10 @@
         <!-- HERO -->
         <section id="hero">
             <div class="hero-glass">
-                <h1 class="hero-title">SolarCalc</h1>
+                <div class="hero-brand">
+                    <svg class="hero-logo" viewBox="0 0 24 24"><path fill="url(#sc-grad1)" fill-rule="evenodd" d="M10.925,1.193C11.116,0.771,11.537,0.5,12,0.5s0.884,0.271,1.075,0.693l1.167,2.578c0.165,0.365,0.463,0.653,0.833,0.806c0.37,0.153,0.784,0.16,1.159,0.019l2.648-0.997c0.434-0.163,0.923-0.058,1.25,0.27c0.328,0.328,0.433,0.817,0.27,1.25l-0.997,2.648c-0.141,0.375-0.134,0.789,0.019,1.159c0.153,0.37,0.441,0.667,0.806,0.833l2.578,1.167C23.229,11.116,23.5,11.537,23.5,12s-0.271,0.884-0.693,1.075l-2.578,1.167c-0.365,0.165-0.653,0.463-0.806,0.833c-0.153,0.37-0.16,0.784-0.019,1.159l0.997,2.648c0.163,0.434,0.058,0.923-0.27,1.25c-0.328,0.328-0.817,0.433-1.25,0.27l-2.648-0.997c-0.375-0.141-0.789-0.134-1.159,0.019c-0.37,0.153-0.667,0.441-0.833,0.806l-1.167,2.578C12.884,23.229,12.463,23.5,12,23.5s-0.884-0.271-1.075-0.693l-1.167-2.578c-0.165-0.365-0.463-0.653-0.833-0.806c-0.37-0.153-0.784-0.16-1.159-0.019l-2.648,0.997c-0.434,0.163-0.923,0.058-1.25-0.27s-0.433-0.817-0.27-1.25l0.997-2.648c0.141-0.375,0.134-0.789-0.019-1.159c-0.153-0.37-0.441-0.667-0.806-0.833l-2.578-1.167C0.771,12.884,0.5,12.463,0.5,12s0.271-0.884,0.693-1.075l2.578-1.167c0.365-0.165,0.653-0.463,0.806-0.833c0.153-0.37,0.16-0.784,0.019-1.159L3.598,5.118c-0.163-0.434-0.058-0.923,0.27-1.25c0.328-0.328,0.817-0.433,1.25-0.27l2.648,0.997C8.141,4.737,8.555,4.73,8.925,4.577c0.37-0.153,0.667-0.441,0.833-0.806L10.925,1.193z" clip-rule="evenodd"/><path fill="url(#sc-grad2)" d="M10.925,1.193C11.116,0.771,11.537,0.5,12,0.5s0.884,0.271,1.075,0.693l1.167,2.578c0.165,0.365,0.463,0.653,0.833,0.806c0.37,0.153,0.784,0.16,1.159,0.019l2.648-0.997c0.434-0.163,0.923-0.058,1.25,0.27c0.328,0.328,0.433,0.817,0.27,1.25l-0.997,2.648c-0.141,0.375-0.134,0.789,0.019,1.159c0.153,0.37,0.441,0.667,0.806,0.833l2.578,1.167C23.229,11.116,23.5,11.537,23.5,12s-0.271,0.884-0.693,1.075l-2.578,1.167c-0.365,0.165-0.653,0.463-0.806,0.833c-0.153,0.37-0.16,0.784-0.019,1.159l0.997,2.648c0.163,0.434,0.058,0.923-0.27,1.25c-0.328,0.328-0.817,0.433-1.25,0.27l-2.648-0.997c-0.375-0.141-0.789-0.134-1.159,0.019c-0.37,0.153-0.667,0.441-0.833,0.806l-1.167,2.578C12.884,23.229,12.463,23.5,12,23.5s-0.884-0.271-1.075-0.693l-1.167-2.578c-0.165-0.365-0.463-0.653-0.833-0.806c-0.37-0.153-0.784-0.16-1.159-0.019l-2.648,0.997c-0.434,0.163-0.923,0.058-1.25-0.27s-0.433-0.817-0.27-1.25l0.997-2.648c0.141-0.375,0.134-0.789-0.019-1.159c-0.153-0.37-0.441-0.667-0.806-0.833l-2.578-1.167C0.771,12.884,0.5,12.463,0.5,12s0.271-0.884,0.693-1.075l2.578-1.167c0.365-0.165,0.653-0.463,0.806-0.833c0.153-0.37,0.16-0.784,0.019-1.159L3.598,5.118c-0.163-0.434-0.058-0.923,0.27-1.25c0.328-0.328,0.817-0.433,1.25-0.27l2.648,0.997C8.141,4.737,8.555,4.73,8.925,4.577c0.37-0.153,0.667-0.441,0.833-0.806L10.925,1.193z"/><path fill="url(#sc-grad3)" d="M17,12c0,2.761-2.239,5-5,5s-5-2.239-5-5s2.239-5,5-5C14.761,7,17,9.239,17,12"/></svg>
+                    <h1 class="hero-title"><span class="solar">Solar</span><span class="calc">Calc</span></h1>
+                </div>
                 <p class="hero-sub">Optimiza tu panel solar con matem&aacute;ticas puras.</p>
             </div>
             <div class="scroll-hint">
@@ -1051,14 +1154,22 @@
         <!-- FOOTER -->
         <footer id="footer" data-pos="footer">
             <div class="footer-inner">
-                <h2 class="footer-title">Matem&aacute;ticas que puedes tocar.</h2>
-                <p>Proyecto de C&aacute;lculo &mdash; Diferencial 2026-1</p>
-                <p class="names">Obed Gonzalez &middot; Jerem&iacute;as &middot; Abraham</p>
+                <div style="display:flex;align-items:center;gap:0.6rem;justify-content:center;margin-bottom:0.5rem">
+                    <svg width="32" height="32" viewBox="0 0 24 24"><path fill="url(#sc-grad1)" fill-rule="evenodd" d="M10.925,1.193C11.116,0.771,11.537,0.5,12,0.5s0.884,0.271,1.075,0.693l1.167,2.578c0.165,0.365,0.463,0.653,0.833,0.806c0.37,0.153,0.784,0.16,1.159,0.019l2.648-0.997c0.434-0.163,0.923-0.058,1.25,0.27c0.328,0.328,0.433,0.817,0.27,1.25l-0.997,2.648c-0.141,0.375-0.134,0.789,0.019,1.159c0.153,0.37,0.441,0.667,0.806,0.833l2.578,1.167C23.229,11.116,23.5,11.537,23.5,12s-0.271,0.884-0.693,1.075l-2.578,1.167c-0.365,0.165-0.653,0.463-0.806,0.833c-0.153,0.37-0.16,0.784-0.019,1.159l0.997,2.648c0.163,0.434,0.058,0.923-0.27,1.25c-0.328,0.328-0.817,0.433-1.25,0.27l-2.648-0.997c-0.375-0.141-0.789-0.134-1.159,0.019c-0.37,0.153-0.667,0.441-0.833,0.806l-1.167,2.578C12.884,23.229,12.463,23.5,12,23.5s-0.884-0.271-1.075-0.693l-1.167-2.578c-0.165-0.365-0.463-0.653-0.833-0.806c-0.37-0.153-0.784-0.16-1.159-0.019l-2.648,0.997c-0.434,0.163-0.923,0.058-1.25-0.27s-0.433-0.817-0.27-1.25l0.997-2.648c0.141-0.375,0.134-0.789-0.019-1.159c-0.153-0.37-0.441-0.667-0.806-0.833l-2.578-1.167C0.771,12.884,0.5,12.463,0.5,12s0.271-0.884,0.693-1.075l2.578-1.167c0.365-0.165,0.653-0.463,0.806-0.833c0.153-0.37,0.16-0.784,0.019-1.159L3.598,5.118c-0.163-0.434-0.058-0.923,0.27-1.25c0.328-0.328,0.817-0.433,1.25-0.27l2.648,0.997C8.141,4.737,8.555,4.73,8.925,4.577c0.37-0.153,0.667-0.441,0.833-0.806L10.925,1.193z" clip-rule="evenodd"/><path fill="url(#sc-grad3)" d="M17,12c0,2.761-2.239,5-5,5s-5-2.239-5-5s2.239-5,5-5C14.761,7,17,9.239,17,12"/></svg>
+                    <h2 class="footer-title">SolarCalc</h2>
+                </div>
+                <p style="font-size:1.05rem;color:var(--text);margin-bottom:0.3rem">Matem&aacute;ticas que puedes tocar.</p>
+                <p>Proyecto de C&aacute;lculo Diferencial 2026-1</p>
                 <p>Universidad Latina de Panam&aacute;</p>
+                <div style="width:40px;height:1px;background:rgba(197,162,121,0.15);margin:1rem auto"></div>
+                <p class="names">Obed &middot; Abraham &middot; Jerem&iacute;as</p>
             </div>
         </footer>
 
-        <div class="copyright">&copy; 2026 SolarCalc &mdash; Universidad Latina de Panam&aacute;. Todos los derechos reservados.</div>
+        <div class="copyright">
+            <p>&copy; 2026 SolarCalc &mdash; Universidad Latina de Panam&aacute;</p>
+            <p style="margin-top:0.3rem">Designed with ❤️ by Obed</p>
+        </div>
 
     </main>
 
@@ -1147,6 +1258,23 @@
                 });
 
                 if (!best) best = sections[0];
+
+                // Gradual fade + shrink: cube gone before feat-panama cards
+                var panama = document.getElementById('feat-panama');
+                var pr = panama.getBoundingClientRect();
+                var cubeScene = cubeFloat.querySelector('.cube-scene');
+                var fadeStart = vh * 0.10;
+                var fadeEnd = vh * -0.20;
+                if (pr.top < fadeStart && pr.top > -pr.height * 0.5) {
+                    var fade = Math.min(Math.max((pr.top - fadeEnd) / (fadeStart - fadeEnd), 0), 1);
+                    cubeFloat.style.opacity = fade;
+                    var shrink = 0.3 + fade * 0.7;
+                    cubeScene.style.transform = 'scale(' + shrink + ')';
+                } else if (pr.top >= fadeStart) {
+                    cubeFloat.style.opacity = '';
+                    cubeScene.style.transform = '';
+                }
+
                 if (best.id === lastActiveId) return;
                 lastActiveId = best.id;
 
@@ -1367,7 +1495,16 @@
             requestAnimationFrame(glowTick);
         })();
 
-        // ====== SIDE INDICATOR ====== //
+        // ====== TOOLBOX TOGGLE (mobile tap) ====== //
+        document.getElementById('toolbox-btn').addEventListener('click', function() {
+            document.getElementById('toolbox').classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+            var tb = document.getElementById('toolbox');
+            if (!tb.contains(e.target)) tb.classList.remove('open');
+        });
+
+        // ====== TOOLBOX DATA ====== //
         function updateSideIndicator() {
             var now = new Date();
             var start = new Date(now.getFullYear(), 0, 0);
