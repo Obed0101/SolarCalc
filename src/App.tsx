@@ -10,23 +10,19 @@ import { SensorsPage } from "@/app/sensors/page";
 import { ControlPage } from "@/app/control/page";
 import { SettingsPage } from "@/app/settings/page";
 import { OnboardingPage } from "@/app/onboarding/page";
+import { HMIDashboard } from "@/app/hmi/page";
 import { useSettingsStore } from "@/stores/settings-store";
+import { usePlatform } from "@/hooks/use-platform";
 
-function AppRoutes() {
+function MobileRoutes() {
   const location = useLocation();
-  const { setupComplete, locationName } = useSettingsStore();
-
-  if (!setupComplete) {
-    return <OnboardingPage />;
-  }
+  const { locationName } = useSettingsStore();
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#000", width: "100%" }}>
       <Sidebar />
-
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
         <Header locationName={locationName} />
-
         <main style={{ flex: "1 1 0", overflowY: "scroll", padding: "0 32px 80px 32px", boxSizing: "border-box", width: "100%", height: 0 }}>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
@@ -40,16 +36,32 @@ function AppRoutes() {
           </AnimatePresence>
         </main>
       </div>
-
       <MobileNav />
     </div>
   );
 }
 
+function AppContent() {
+  const { setupComplete } = useSettingsStore();
+  const { isDesktop } = usePlatform();
+
+  if (!setupComplete) {
+    return <OnboardingPage />;
+  }
+
+  // Desktop: single-screen HMI dashboard
+  // Mobile: multi-page router layout
+  if (isDesktop) {
+    return <HMIDashboard />;
+  }
+
+  return <MobileRoutes />;
+}
+
 export function App() {
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <AppContent />
     </BrowserRouter>
   );
 }
