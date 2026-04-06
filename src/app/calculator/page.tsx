@@ -72,7 +72,7 @@ export function CalculatorPage() {
   }
 
   return (
-    <PageTransition className="h-full overflow-y-auto">
+    <PageTransition>
       <motion.div
         variants={staggerContainer}
         initial="initial"

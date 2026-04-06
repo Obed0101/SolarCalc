@@ -45,7 +45,7 @@ export function WeatherPage() {
   ];
 
   return (
-    <PageTransition className="h-full overflow-y-auto">
+    <PageTransition>
       <motion.div
         variants={staggerContainer}
         initial="initial"
