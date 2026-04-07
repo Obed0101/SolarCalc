@@ -36,10 +36,10 @@ export function MiniGauge({
 }: MiniGaugeProps) {
   const { semiTrackWidth, semiArcWidth } = gaugeTokens;
   const svgWidth = size;
-  const svgHeight = size * 0.6;
+  const svgHeight = size * 0.7;
   const cx = svgWidth / 2;
-  const cy = svgHeight - 4;
-  const radius = size * 0.4;
+  const cy = svgHeight - 8;
+  const radius = size * 0.35;
 
   // 180-degree arc: from 180 (left) to 360 (right), open at bottom
   const arcStartDeg = 180;
@@ -93,10 +93,10 @@ export function MiniGauge({
 
         {/* Center number */}
         <foreignObject
-          x={cx - size * 0.4}
-          y={cy - 28}
-          width={size * 0.8}
-          height={32}
+          x={cx - size * 0.45}
+          y={cy - 24}
+          width={size * 0.9}
+          height={28}
         >
           <div
             style={{
@@ -108,7 +108,7 @@ export function MiniGauge({
           >
             <span
               style={{
-                fontSize: 28,
+                fontSize: 22,
                 fontWeight: 200,
                 fontFamily: fonts.mono,
                 fontVariantNumeric: "tabular-nums",
