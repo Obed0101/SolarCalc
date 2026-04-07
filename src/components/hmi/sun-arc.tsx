@@ -22,8 +22,8 @@ const P2 = { x: 760, y: 120 };
 const ARC_PATH = `M ${P1.x} ${P1.y} Q ${CP.x} ${CP.y} ${P2.x} ${P2.y}`;
 
 // Harvest bar geometry
-const BAR_Y = 132;
-const BAR_HEIGHT = 3;
+const BAR_Y = 152;
+const BAR_HEIGHT = 4;
 const BAR_LEFT = 40;
 const BAR_RIGHT = 760;
 const BAR_WIDTH = BAR_RIGHT - BAR_LEFT;
@@ -71,6 +71,7 @@ export default function SunArc({
   const progress = sunProgress(latitude, day, currentHour);
 
   const isNight = progress <= 0 || progress >= 1;
+  const showSunDot = !isNight && progress > 0.02 && progress < 0.98;
 
   const sunPos = useMemo(() => bezierPoint(progress), [progress]);
   const noonPos = useMemo(() => bezierPoint(0.5), []);
@@ -89,7 +90,7 @@ export default function SunArc({
   return (
     <div style={{ width: "100%", position: "relative" }} role="img" aria-label={`Arco solar: ${isNight ? "noche" : `${currentWatts}W a las ${timeStr}`}`}>
       <svg
-        viewBox="0 0 800 150"
+        viewBox="0 0 800 178"
         style={{ width: "100%", height: "auto", display: "block" }}
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -119,20 +120,11 @@ export default function SunArc({
           </linearGradient>
         </defs>
 
-        {/* Horizon line */}
-        <line
-          x1="20"
-          y1="170"
-          x2="780"
-          y2="170"
-          stroke={colors.border}
-          strokeWidth="1"
-        />
-
-        {/* Horizon labels */}
+        {/* Horizon labels (above harvest bar) */}
         <text
-          x="20"
-          y="168"
+          x={P1.x}
+          y={BAR_Y - 18}
+          textAnchor="middle"
           style={{
             fontSize: 8,
             fontFamily: fonts.mono,
@@ -144,9 +136,9 @@ export default function SunArc({
           AMANECER
         </text>
         <text
-          x="780"
-          y="168"
-          textAnchor="end"
+          x={P2.x}
+          y={BAR_Y - 18}
+          textAnchor="middle"
           style={{
             fontSize: 8,
             fontFamily: fonts.mono,
@@ -206,10 +198,10 @@ export default function SunArc({
           {peakWatts}W pk
         </text>
 
-        {/* Sunrise label */}
+        {/* Sunrise time label (above bar) */}
         <text
           x={P1.x}
-          y={P1.y + 14}
+          y={BAR_Y - 8}
           textAnchor="middle"
           style={{
             fontSize: 9,
@@ -221,10 +213,10 @@ export default function SunArc({
           {formatHour(sunrise)}
         </text>
 
-        {/* Sunset label */}
+        {/* Sunset time label (above bar) */}
         <text
           x={P2.x}
-          y={P2.y + 14}
+          y={BAR_Y - 8}
           textAnchor="middle"
           style={{
             fontSize: 9,
@@ -236,8 +228,8 @@ export default function SunArc({
           {formatHour(sunset)}
         </text>
 
-        {/* Sun dot with glow (day only) */}
-        {!isNight && (
+        {/* Sun dot with glow (hidden near sunrise/sunset edges) */}
+        {showSunDot && (
           <motion.circle
             cx={sunPos.x}
             cy={sunPos.y}
@@ -310,6 +302,18 @@ export default function SunArc({
           </text>
         )}
 
+        {/* Harvest bar border */}
+        <rect
+          x={BAR_LEFT - 0.5}
+          y={BAR_Y - 0.5}
+          width={BAR_WIDTH + 1}
+          height={BAR_HEIGHT + 1}
+          rx={2.5}
+          fill="none"
+          stroke="#333"
+          strokeWidth={1}
+        />
+
         {/* Harvest bar track */}
         <rect
           x={BAR_LEFT}
@@ -335,7 +339,7 @@ export default function SunArc({
         {/* Harvest label left (harvested) */}
         <text
           x={BAR_LEFT}
-          y={BAR_Y + BAR_HEIGHT + 12}
+          y={BAR_Y + BAR_HEIGHT + 14}
           style={{
             fontSize: 11,
             fontFamily: fonts.mono,
@@ -349,7 +353,7 @@ export default function SunArc({
         {/* Harvest label right (expected) */}
         <text
           x={BAR_RIGHT}
-          y={BAR_Y + BAR_HEIGHT + 12}
+          y={BAR_Y + BAR_HEIGHT + 14}
           textAnchor="end"
           style={{
             fontSize: 11,

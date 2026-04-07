@@ -11,28 +11,62 @@ interface PanelTiltProps {
 }
 
 const DEG_TO_RAD = Math.PI / 180;
-const PIVOT = { x: 80, y: 160 };
-const PANEL_LENGTH = 140;
+const PIVOT = { x: 60, y: 160 };
+const PANEL_LENGTH = 150;
 const PANEL_THICKNESS = 6;
+const GROUND_Y = 160;
 
+/** Compute endpoint from pivot at given angle (0 = horizontal right, positive = CCW upward) */
 function endpoint(angle: number, length: number) {
+  const rad = angle * DEG_TO_RAD;
   return {
-    x: PIVOT.x + length * Math.cos(angle * DEG_TO_RAD),
-    y: PIVOT.y - length * Math.sin(angle * DEG_TO_RAD),
+    x: PIVOT.x + length * Math.cos(rad),
+    y: PIVOT.y - length * Math.sin(rad),
   };
 }
 
+/** SVG pie-slice wedge between two angles */
 function wedgePath(angleA: number, angleB: number, radius: number): string {
   const a = Math.min(angleA, angleB);
   const b = Math.max(angleA, angleB);
-  const startRad = -b * DEG_TO_RAD;
-  const endRad = -a * DEG_TO_RAD;
+  const startRad = a * DEG_TO_RAD;
+  const endRad = b * DEG_TO_RAD;
   const x1 = PIVOT.x + radius * Math.cos(startRad);
-  const y1 = PIVOT.y + radius * Math.sin(startRad);
+  const y1 = PIVOT.y - radius * Math.sin(startRad);
   const x2 = PIVOT.x + radius * Math.cos(endRad);
-  const y2 = PIVOT.y + radius * Math.sin(endRad);
+  const y2 = PIVOT.y - radius * Math.sin(endRad);
   const sweep = b - a > 180 ? 1 : 0;
-  return `M ${PIVOT.x} ${PIVOT.y} L ${x1} ${y1} A ${radius} ${radius} 0 ${sweep} 1 ${x2} ${y2} Z`;
+  // Arc from lower angle to higher angle (CCW in screen = sweep 0)
+  return `M ${PIVOT.x} ${PIVOT.y} L ${x1} ${y1} A ${radius} ${radius} 0 ${sweep} 0 ${x2} ${y2} Z`;
+}
+
+/** SVG arc path between two angles */
+function arcBetween(angleA: number, angleB: number, radius: number): string {
+  const a = Math.min(angleA, angleB);
+  const b = Math.max(angleA, angleB);
+  const x1 = PIVOT.x + radius * Math.cos(a * DEG_TO_RAD);
+  const y1 = PIVOT.y - radius * Math.sin(a * DEG_TO_RAD);
+  const x2 = PIVOT.x + radius * Math.cos(b * DEG_TO_RAD);
+  const y2 = PIVOT.y - radius * Math.sin(b * DEG_TO_RAD);
+  const sweep = b - a > 180 ? 1 : 0;
+  return `M ${x1} ${y1} A ${radius} ${radius} 0 ${sweep} 0 ${x2} ${y2}`;
+}
+
+/** Compute sun position: above the scene at roughly (90 - optimalAngle) from panel normal */
+function sunPosition(optimalAngle: number): { x: number; y: number } {
+  // Sun should be perpendicular to the optimal panel surface.
+  // Panel at optimalAngle from horizontal -> sun ray comes from (90 + optimalAngle) from horizontal.
+  // Small optimalAngle (panel flat) = sun nearly overhead (upper center).
+  // Large optimalAngle (panel steep) = sun lower toward horizon (upper left/right).
+  const sunAngleFromHorizontal = 90 - optimalAngle;
+  const sunDist = 160;
+  const rad = sunAngleFromHorizontal * DEG_TO_RAD;
+  // Place sun relative to panel midpoint area, biased toward upper-left/center
+  const panelMid = endpoint(optimalAngle, PANEL_LENGTH * 0.5);
+  return {
+    x: Math.max(30, Math.min(270, panelMid.x - sunDist * Math.cos(rad))),
+    y: Math.max(15, panelMid.y - sunDist * Math.sin(rad)),
+  };
 }
 
 export function PanelTilt({
@@ -40,30 +74,33 @@ export function PanelTilt({
   optimalAngle,
   efficiency,
   width = 300,
-  height = 200,
+  height = 230,
 }: PanelTiltProps) {
   const loss = 100 - Math.max(0, Math.min(100, efficiency));
   const diff = Math.abs(currentAngle - optimalAngle);
   const optEnd = endpoint(optimalAngle, PANEL_LENGTH);
 
-  // Sun ray: comes from upper-right, perpendicular to optimal panel surface
-  const sunOrigin = { x: 260, y: 20 };
-  const sunTarget = endpoint(optimalAngle, PANEL_LENGTH * 0.6);
+  // Sun placement based on optimal angle
+  const sunOrigin = sunPosition(optimalAngle);
+  const sunTarget = endpoint(optimalAngle, PANEL_LENGTH * 0.55);
 
   // Triangle tip for optimal line
   const tipEnd = endpoint(optimalAngle, PANEL_LENGTH);
-  const tipLeft = endpoint(optimalAngle + 6, PANEL_LENGTH - 10);
-  const tipRight = endpoint(optimalAngle - 6, PANEL_LENGTH - 10);
+  const tipLeft = endpoint(optimalAngle + 5, PANEL_LENGTH - 10);
+  const tipRight = endpoint(optimalAngle - 5, PANEL_LENGTH - 10);
 
-  // Angle label arc midpoint
+  // Angle label: positioned outside the wedge, further from lines
   const midAngle = (currentAngle + optimalAngle) / 2;
-  const arcLabelPos = endpoint(midAngle, PANEL_LENGTH * 0.55);
+  const labelRadius = 50;
+  const arcLabelPos = endpoint(midAngle, labelRadius);
+  // Offset label upward and to the right to avoid overlapping lines
+  const labelOffset = { x: 14, y: -6 };
 
   const lossColor = loss <= 5 ? colors.green : loss <= 15 ? colors.amber : colors.red;
 
   return (
     <svg
-      viewBox="0 0 300 200"
+      viewBox="0 0 300 230"
       style={{
         width,
         height,
@@ -81,9 +118,9 @@ export function PanelTilt({
       {/* Ground line */}
       <line
         x1={20}
-        y1={160}
+        y1={GROUND_Y}
         x2={280}
-        y2={160}
+        y2={GROUND_Y}
         stroke={colors.border}
         strokeWidth={1}
       />
@@ -95,9 +132,9 @@ export function PanelTilt({
           <line
             key={i}
             x1={x}
-            y1={160}
+            y1={GROUND_Y}
             x2={x - 6}
-            y2={166}
+            y2={GROUND_Y + 6}
             stroke="#1A1A1A"
             strokeWidth={0.5}
           />
@@ -110,7 +147,7 @@ export function PanelTilt({
           d={wedgePath(currentAngle, optimalAngle, PANEL_LENGTH * 0.9)}
           fill={colors.red}
           initial={{ fillOpacity: 0 }}
-          animate={{ fillOpacity: loss / 100 * 0.4 }}
+          animate={{ fillOpacity: (loss / 100) * 0.4 }}
           transition={{ duration: 0.4 }}
         />
       )}
@@ -132,7 +169,7 @@ export function PanelTilt({
         cy={sunOrigin.y}
         r={8}
         fill={colors.amber}
-        style={{ filter: `url(#panel-tilt-sun-glow)` }}
+        style={{ filter: "url(#panel-tilt-sun-glow)" }}
       />
       <circle
         cx={sunOrigin.x}
@@ -140,7 +177,7 @@ export function PanelTilt({
         r={5}
         fill={colors.amber}
       />
-      {/* Sun rays (small lines radiating out) */}
+      {/* Sun rays */}
       {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => {
         const rad = a * DEG_TO_RAD;
         return (
@@ -175,14 +212,14 @@ export function PanelTilt({
         opacity={0.7}
       />
 
-      {/* Panel body (animated rotation) */}
+      {/* Panel body (animated rotation from pivot) */}
       <motion.g
         initial={{ rotate: 0 }}
         animate={{ rotate: -currentAngle }}
         transition={gaugeTokens.needleSpring}
         style={{ transformOrigin: `${PIVOT.x}px ${PIVOT.y}px` }}
       >
-        {/* Panel rectangle */}
+        {/* Panel rectangle drawn at 0 degrees (horizontal right from pivot) */}
         <rect
           x={PIVOT.x}
           y={PIVOT.y - PANEL_THICKNESS / 2}
@@ -241,11 +278,11 @@ export function PanelTilt({
             strokeWidth={1}
             opacity={0.6}
           />
-          {/* Difference label */}
+          {/* Difference label — offset to avoid overlapping lines */}
           <text
-            x={arcLabelPos.x}
-            y={arcLabelPos.y}
-            textAnchor="middle"
+            x={arcLabelPos.x + labelOffset.x}
+            y={arcLabelPos.y + labelOffset.y}
+            textAnchor="start"
             dominantBaseline="middle"
             style={{
               fontSize: 9,
@@ -254,18 +291,18 @@ export function PanelTilt({
               userSelect: "none",
             }}
           >
-            {diff.toFixed(1)}
+            {diff.toFixed(1)}{"\u00B0"}
           </text>
         </>
       )}
 
-      {/* Data strip */}
-      <foreignObject x={0} y={170} width={300} height={28}>
+      {/* Data strip — inside the extended viewBox */}
+      <foreignObject x={0} y={175} width={300} height={48}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            padding: "0 20px",
+            padding: "8px 20px 0",
             alignItems: "baseline",
           }}
         >
@@ -306,16 +343,4 @@ export function PanelTilt({
       </foreignObject>
     </svg>
   );
-}
-
-/** SVG arc path between two angles at a given radius from the pivot */
-function arcBetween(angleA: number, angleB: number, radius: number): string {
-  const a = Math.min(angleA, angleB);
-  const b = Math.max(angleA, angleB);
-  const x1 = PIVOT.x + radius * Math.cos(-a * DEG_TO_RAD);
-  const y1 = PIVOT.y + radius * Math.sin(-a * DEG_TO_RAD);
-  const x2 = PIVOT.x + radius * Math.cos(-b * DEG_TO_RAD);
-  const y2 = PIVOT.y + radius * Math.sin(-b * DEG_TO_RAD);
-  const sweep = b - a > 180 ? 1 : 0;
-  return `M ${x1} ${y1} A ${radius} ${radius} 0 ${sweep} 0 ${x2} ${y2}`;
 }

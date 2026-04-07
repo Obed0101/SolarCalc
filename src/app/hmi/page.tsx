@@ -52,8 +52,8 @@ export function HMIDashboard() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>SolarCalc</span>
           <span style={{
-            fontSize: 8, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
-            color: colors.cyan, padding: "2px 6px", border: `1px solid ${colors.cyan}40`, borderRadius: 3,
+            fontSize: 8, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase",
+            color: colors.textSecondary, padding: "2px 6px", background: "rgba(255,255,255,0.06)", borderRadius: 3,
           }}>PRODUCCION</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
