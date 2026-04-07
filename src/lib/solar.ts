@@ -108,6 +108,36 @@ export function sunHoursEstimate(latitude: number, day: number): number {
   return (2 * H) / 15; // hours
 }
 
+/** Sunrise hour (decimal, e.g. 6.38 = 6:23 AM) */
+export function sunriseHour(latitude: number, day: number): number {
+  const sunH = sunHoursEstimate(latitude, day);
+  const solarNoon = 12; // approximate
+  return solarNoon - sunH / 2;
+}
+
+/** Sunset hour (decimal, e.g. 18.8 = 6:48 PM) */
+export function sunsetHour(latitude: number, day: number): number {
+  const sunH = sunHoursEstimate(latitude, day);
+  const solarNoon = 12;
+  return solarNoon + sunH / 2;
+}
+
+/** Sun progress through the day (0 = sunrise, 0.5 = noon, 1 = sunset) */
+export function sunProgress(latitude: number, day: number, hour: number): number {
+  const rise = sunriseHour(latitude, day);
+  const set = sunsetHour(latitude, day);
+  if (hour <= rise) return 0;
+  if (hour >= set) return 1;
+  return (hour - rise) / (set - rise);
+}
+
+/** Format decimal hour to HH:MM string */
+export function formatHour(h: number): string {
+  const hours = Math.floor(h);
+  const mins = Math.round((h - hours) * 60);
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+}
+
 /** Daily savings calculation */
 export function dailySavings(
   nominalPower: number,
