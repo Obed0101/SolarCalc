@@ -68,7 +68,7 @@ export function HMIDashboard() {
       {/* ── Content ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 16px", gap: 8, minHeight: 0, overflow: "hidden" }}>
 
-        {/* Row 1: Sun Arc */}
+        {/* Row 1: Sun Arc (hero, full width) */}
         <Card style={{ padding: "8px 12px 4px", flexShrink: 0 }}>
           <SunArc
             latitude={latitude} day={solar.today} currentWatts={current.watts}
@@ -77,97 +77,96 @@ export function HMIDashboard() {
           />
         </Card>
 
-        {/* Row 2: Main grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.5fr", gap: 8, flex: 1, minHeight: 0 }}>
+        {/* Row 2: PanelTilt | 4 Gauges 2x2 | HarvestCurve (Sprint 1 layout) */}
+        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr 1fr", gap: 8, flex: 1, minHeight: 0 }}>
 
-          {/* Col 1: Panel Tilt + Efficiency Donut */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 0 }}>
-            <Card style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 0 }}>
-              <PanelTilt currentAngle={fixedAngle} optimalAngle={Math.abs(solar.optimal)} efficiency={solar.efficiency} width={260} height={180} />
-            </Card>
-            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 10 }}>
-              <EfficiencyDonut efficiency={solar.efficiency} angleLoss={solar.loss} cloudLoss={3} size={140} />
-            </Card>
-          </div>
+          {/* Left: Panel Tilt */}
+          <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 0, overflow: "hidden" }}>
+            <PanelTilt currentAngle={fixedAngle} optimalAngle={Math.abs(solar.optimal)} efficiency={solar.efficiency} width={250} height={170} />
+          </Card>
 
-          {/* Col 2: 4 Mini Gauges (2x2) */}
+          {/* Center: 4 Mini Gauges 2x2 */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 6 }}>
-            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
-              <MiniGauge value={current.watts} max={500} label="Watts" unit="W" color={colors.green} size={110} />
+            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 4 }}>
+              <MiniGauge value={current.watts} max={500} label="Watts" unit="W" color={colors.green} size={100} />
             </Card>
-            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
-              <MiniGauge value={current.voltage} max={50} label="Voltaje" unit="V" color={colors.cyan} size={110} />
+            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 4 }}>
+              <MiniGauge value={current.voltage} max={50} label="Voltaje" unit="V" color={colors.cyan} size={100} />
             </Card>
-            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
-              <MiniGauge value={current.amps} max={15} label="Corriente" unit="A" color={colors.amber} size={110} />
+            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 4 }}>
+              <MiniGauge value={current.amps} max={15} label="Corriente" unit="A" color={colors.amber} size={100} />
             </Card>
-            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
-              <MiniGauge value={solar.efficiency} max={100} label="Eficiencia" unit="%" color={solar.efficiency > 90 ? colors.green : colors.amber} size={110} />
+            <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 4 }}>
+              <MiniGauge value={solar.efficiency} max={100} label="Eficiencia" unit="%" color={solar.efficiency > 90 ? colors.green : colors.amber} size={100} />
             </Card>
           </div>
 
-          {/* Col 3: Harvest Curve + Monthly + Savings stacked */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 0 }}>
-            {/* Harvest Curve */}
-            <Card style={{ flex: 1, padding: 10, minHeight: 100 }}>
-              <HarvestCurve
-                history={history}
-                nominalPower={nominalPower}
-                sunriseH={solar.rise}
-                sunsetH={solar.set}
-                currentHour={hourDecimal}
-                harvestedKwh={harvestedKwh}
-                expectedKwh={expectedKwh}
-              />
-            </Card>
+          {/* Right: Harvest Curve (replaces old sparkline) */}
+          <Card style={{ padding: 10, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <HarvestCurve
+              history={history}
+              nominalPower={nominalPower}
+              sunriseH={solar.rise}
+              sunsetH={solar.set}
+              currentHour={hourDecimal}
+              harvestedKwh={harvestedKwh}
+              expectedKwh={expectedKwh}
+            />
+          </Card>
+        </div>
 
-            {/* Monthly + Savings row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 8, flexShrink: 0 }}>
-              {/* Monthly */}
-              <Card style={{ padding: 8 }}>
-                <span style={{ ...typography.label, display: "block", marginBottom: 4, fontSize: 8 }}>Angulos anuales</span>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 2 }}>
-                  {solar.months.map((m, i) => {
-                    const isCurr = i === currentMonth;
-                    return (
-                      <div key={i} style={{
-                        textAlign: "center", padding: "2px 0", borderRadius: 3,
-                        background: isCurr ? `${colors.cyan}15` : "transparent",
-                        border: isCurr ? `1px solid ${colors.cyan}40` : "1px solid transparent",
-                      }}>
-                        <div style={{ fontSize: 6, color: isCurr ? colors.cyan : colors.textTertiary, fontWeight: 700 }}>
-                          {m.month.slice(0, 3).toUpperCase()}
-                        </div>
-                        <div style={{ fontSize: 10, fontWeight: 200, fontFamily: fonts.mono, color: isCurr ? colors.textPrimary : colors.textSecondary }}>
-                          {Math.abs(m.angle).toFixed(0)}°
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
+        {/* Row 3: Efficiency Donut | Monthly | Savings — bottom strip */}
+        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 1fr", gap: 8, flexShrink: 0 }}>
 
-              {/* Savings */}
-              <Card style={{ padding: 8, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <span style={{ ...typography.label, display: "block", marginBottom: 4, fontSize: 8 }}>Ahorro</span>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div style={{ flex: 1, textAlign: "center" }}>
-                    <div style={{ fontSize: 6, color: colors.textTertiary, textTransform: "uppercase", letterSpacing: "0.08em" }}>Optimo</div>
-                    <span style={{ fontSize: 14, fontWeight: 200, fontFamily: fonts.mono, color: colors.green }}>
-                      $<AnimatedNumber value={solar.savings.optimal} decimals={2} />
-                    </span>
+          {/* Efficiency Donut */}
+          <Card style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 8 }}>
+            <EfficiencyDonut efficiency={solar.efficiency} angleLoss={solar.loss} cloudLoss={3} size={130} />
+          </Card>
+
+          {/* Monthly Compact 6x2 */}
+          <Card style={{ padding: 10 }}>
+            <span style={{ ...typography.label, display: "block", marginBottom: 6, fontSize: 9 }}>Angulos anuales</span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 3 }}>
+              {solar.months.map((m, i) => {
+                const isCurr = i === currentMonth;
+                return (
+                  <div key={i} style={{
+                    textAlign: "center", padding: "4px 0", borderRadius: 4,
+                    background: isCurr ? `${colors.cyan}15` : "transparent",
+                    border: isCurr ? `1px solid ${colors.cyan}40` : "1px solid transparent",
+                  }}>
+                    <div style={{ fontSize: 7, color: isCurr ? colors.cyan : colors.textTertiary, fontWeight: 700 }}>
+                      {m.month.slice(0, 3).toUpperCase()}
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 200, fontFamily: fonts.mono, color: isCurr ? colors.textPrimary : colors.textSecondary }}>
+                      {Math.abs(m.angle).toFixed(0)}°
+                    </div>
+                    <div style={{ fontSize: 6, color: colors.textTertiary }}>{m.direction.slice(0, 1)}</div>
                   </div>
-                  <div style={{ width: 1, height: 20, background: colors.border }} />
-                  <div style={{ flex: 1, textAlign: "center" }}>
-                    <div style={{ fontSize: 6, color: colors.textTertiary, textTransform: "uppercase", letterSpacing: "0.08em" }}>Pierdes</div>
-                    <span style={{ fontSize: 14, fontWeight: 200, fontFamily: fonts.mono, color: colors.red }}>
-                      -$<AnimatedNumber value={solar.savings.savings} decimals={2} />
-                    </span>
-                  </div>
-                </div>
-              </Card>
+                );
+              })}
             </div>
-          </div>
+          </Card>
+
+          {/* Savings Ticker */}
+          <Card style={{ padding: 10, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <span style={{ ...typography.label, display: "block", marginBottom: 8, fontSize: 9 }}>Ahorro hoy</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <SavingsRow label="Optimo" value={solar.savings.optimal} color={colors.green} prefix="$" />
+              <div style={{ height: 1, background: colors.border }} />
+              <SavingsRow label="Actual" value={solar.savings.actual} color={colors.textSecondary} prefix="$" />
+              <div style={{ height: 1, background: colors.border }} />
+              <SavingsRow label="Ahorras" value={solar.savings.savings} color={solar.savings.savings > 0 ? colors.amber : colors.green} prefix={solar.savings.savings > 0 ? "-$" : "+$"} />
+            </div>
+            {/* Progress bar */}
+            <div style={{ marginTop: 8, position: "relative", height: 3, background: colors.border, borderRadius: 2, overflow: "hidden" }}>
+              <div style={{
+                position: "absolute", inset: "0 auto 0 0", borderRadius: 2, background: colors.green,
+                width: `${Math.min(100, (solar.savings.actual / Math.max(0.01, solar.savings.optimal)) * 100)}%`,
+                transition: "width 1s ease-out",
+              }} />
+            </div>
+          </Card>
         </div>
       </div>
 
@@ -175,6 +174,8 @@ export function HMIDashboard() {
     </div>
   );
 }
+
+/* ── Sub-components ── */
 
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
@@ -186,6 +187,19 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
       ...style,
     }}>
       {children}
+    </div>
+  );
+}
+
+function SavingsRow({ label, value, color, prefix }: {
+  label: string; value: number; color: string; prefix: string;
+}) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span style={{ fontSize: 9, color: colors.textTertiary, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: 16, fontWeight: 200, fontFamily: fonts.mono, fontVariantNumeric: "tabular-nums", color }}>
+        {prefix}<AnimatedNumber value={Math.abs(value)} decimals={2} />
+      </span>
     </div>
   );
 }
