@@ -66,7 +66,7 @@ export function HMIDashboard() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 16px", gap: 8, minHeight: 0, overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 16px", gap: 8, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
 
         {/* Row 1: Sun Arc (hero, full width) */}
         <Card style={{ padding: "8px 12px 4px", flexShrink: 0 }}>

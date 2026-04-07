@@ -15,15 +15,15 @@ interface SunArcProps {
 }
 
 // Bezier control points
-const P1 = { x: 40, y: 170 };
-const CP = { x: 400, y: 20 };
-const P2 = { x: 760, y: 170 };
+const P1 = { x: 40, y: 120 };
+const CP = { x: 400, y: 10 };
+const P2 = { x: 760, y: 120 };
 
 const ARC_PATH = `M ${P1.x} ${P1.y} Q ${CP.x} ${CP.y} ${P2.x} ${P2.y}`;
 
 // Harvest bar geometry
-const BAR_Y = 182;
-const BAR_HEIGHT = 4;
+const BAR_Y = 132;
+const BAR_HEIGHT = 3;
 const BAR_LEFT = 40;
 const BAR_RIGHT = 760;
 const BAR_WIDTH = BAR_RIGHT - BAR_LEFT;
@@ -89,7 +89,7 @@ export default function SunArc({
   return (
     <div style={{ width: "100%", position: "relative" }} role="img" aria-label={`Arco solar: ${isNight ? "noche" : `${currentWatts}W a las ${timeStr}`}`}>
       <svg
-        viewBox="0 0 800 200"
+        viewBox="0 0 800 150"
         style={{ width: "100%", height: "auto", display: "block" }}
         xmlns="http://www.w3.org/2000/svg"
       >
