@@ -93,10 +93,10 @@ export function MiniGauge({
 
         {/* Center number */}
         <foreignObject
-          x={cx - size * 0.45}
-          y={cy - 24}
-          width={size * 0.9}
-          height={28}
+          x={0}
+          y={cy - 22}
+          width={svgWidth}
+          height={26}
         >
           <div
             style={{
@@ -108,7 +108,7 @@ export function MiniGauge({
           >
             <span
               style={{
-                fontSize: 22,
+                fontSize: 18,
                 fontWeight: 200,
                 fontFamily: fonts.mono,
                 fontVariantNumeric: "tabular-nums",

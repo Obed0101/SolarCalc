@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { colors, fonts, gauge as gaugeTokens } from "@/lib/hmi-tokens";
+import { colors, fonts } from "@/lib/hmi-tokens";
 import { AnimatedNumber } from "@/components/shared/animated-number";
 
 interface PanelTiltProps {
@@ -10,337 +10,103 @@ interface PanelTiltProps {
   height?: number;
 }
 
-const DEG_TO_RAD = Math.PI / 180;
-const PIVOT = { x: 60, y: 160 };
-const PANEL_LENGTH = 150;
-const PANEL_THICKNESS = 6;
-const GROUND_Y = 160;
+const DEG = Math.PI / 180;
 
-/** Compute endpoint from pivot at given angle (0 = horizontal right, positive = CCW upward) */
-function endpoint(angle: number, length: number) {
-  const rad = angle * DEG_TO_RAD;
-  return {
-    x: PIVOT.x + length * Math.cos(rad),
-    y: PIVOT.y - length * Math.sin(rad),
-  };
-}
+export function PanelTilt({ currentAngle, optimalAngle, efficiency, width = 260, height = 200 }: PanelTiltProps) {
+  const pivotX = 70;
+  const pivotY = 135;
+  const panelLen = 120;
 
-/** SVG pie-slice wedge between two angles */
-function wedgePath(angleA: number, angleB: number, radius: number): string {
-  const a = Math.min(angleA, angleB);
-  const b = Math.max(angleA, angleB);
-  const startRad = a * DEG_TO_RAD;
-  const endRad = b * DEG_TO_RAD;
-  const x1 = PIVOT.x + radius * Math.cos(startRad);
-  const y1 = PIVOT.y - radius * Math.sin(startRad);
-  const x2 = PIVOT.x + radius * Math.cos(endRad);
-  const y2 = PIVOT.y - radius * Math.sin(endRad);
-  const sweep = b - a > 180 ? 1 : 0;
-  // Arc from lower angle to higher angle (CCW in screen = sweep 0)
-  return `M ${PIVOT.x} ${PIVOT.y} L ${x1} ${y1} A ${radius} ${radius} 0 ${sweep} 0 ${x2} ${y2} Z`;
-}
+  // Panel endpoint (CCW from horizontal = upward tilt)
+  const pEndX = pivotX + panelLen * Math.cos(currentAngle * DEG);
+  const pEndY = pivotY - panelLen * Math.sin(currentAngle * DEG);
 
-/** SVG arc path between two angles */
-function arcBetween(angleA: number, angleB: number, radius: number): string {
-  const a = Math.min(angleA, angleB);
-  const b = Math.max(angleA, angleB);
-  const x1 = PIVOT.x + radius * Math.cos(a * DEG_TO_RAD);
-  const y1 = PIVOT.y - radius * Math.sin(a * DEG_TO_RAD);
-  const x2 = PIVOT.x + radius * Math.cos(b * DEG_TO_RAD);
-  const y2 = PIVOT.y - radius * Math.sin(b * DEG_TO_RAD);
-  const sweep = b - a > 180 ? 1 : 0;
-  return `M ${x1} ${y1} A ${radius} ${radius} 0 ${sweep} 0 ${x2} ${y2}`;
-}
+  // Ideal endpoint
+  const iEndX = pivotX + panelLen * Math.cos(optimalAngle * DEG);
+  const iEndY = pivotY - panelLen * Math.sin(optimalAngle * DEG);
 
-/** Compute sun position: above the scene at roughly (90 - optimalAngle) from panel normal */
-function sunPosition(optimalAngle: number): { x: number; y: number } {
-  // Sun should be perpendicular to the optimal panel surface.
-  // Panel at optimalAngle from horizontal -> sun ray comes from (90 + optimalAngle) from horizontal.
-  // Small optimalAngle (panel flat) = sun nearly overhead (upper center).
-  // Large optimalAngle (panel steep) = sun lower toward horizon (upper left/right).
-  const sunAngleFromHorizontal = 90 - optimalAngle;
-  const sunDist = 160;
-  const rad = sunAngleFromHorizontal * DEG_TO_RAD;
-  // Place sun relative to panel midpoint area, biased toward upper-left/center
-  const panelMid = endpoint(optimalAngle, PANEL_LENGTH * 0.5);
-  return {
-    x: Math.max(30, Math.min(270, panelMid.x - sunDist * Math.cos(rad))),
-    y: Math.max(15, panelMid.y - sunDist * Math.sin(rad)),
-  };
-}
+  // Sun: perpendicular to ideal panel surface, above
+  const sunAngle = optimalAngle + 90;
+  const sunX = pivotX + 50 * Math.cos(sunAngle * DEG) + panelLen * 0.3;
+  const sunY = Math.max(20, pivotY - 70 * Math.sin(sunAngle * DEG));
 
-export function PanelTilt({
-  currentAngle,
-  optimalAngle,
-  efficiency,
-  width = 300,
-  height = 230,
-}: PanelTiltProps) {
-  const loss = 100 - Math.max(0, Math.min(100, efficiency));
-  const diff = Math.abs(currentAngle - optimalAngle);
-  const optEnd = endpoint(optimalAngle, PANEL_LENGTH);
-
-  // Sun placement based on optimal angle
-  const sunOrigin = sunPosition(optimalAngle);
-  const sunTarget = endpoint(optimalAngle, PANEL_LENGTH * 0.55);
-
-  // Triangle tip for optimal line
-  const tipEnd = endpoint(optimalAngle, PANEL_LENGTH);
-  const tipLeft = endpoint(optimalAngle + 5, PANEL_LENGTH - 10);
-  const tipRight = endpoint(optimalAngle - 5, PANEL_LENGTH - 10);
-
-  // Angle label: positioned outside the wedge, further from lines
-  const midAngle = (currentAngle + optimalAngle) / 2;
-  const labelRadius = 50;
-  const arcLabelPos = endpoint(midAngle, labelRadius);
-  // Offset label upward and to the right to avoid overlapping lines
-  const labelOffset = { x: 14, y: -6 };
-
-  const lossColor = loss <= 5 ? colors.green : loss <= 15 ? colors.amber : colors.red;
+  const angleDiff = Math.abs(currentAngle - optimalAngle);
+  const lossPercent = (1 - Math.cos(angleDiff * DEG)) * 100;
+  const lossColor = lossPercent < 2 ? colors.green : lossPercent < 10 ? colors.amber : colors.red;
 
   return (
-    <svg
-      viewBox="0 0 300 230"
-      style={{
-        width,
-        height,
-        display: "block",
-      }}
-      role="img"
-      aria-label={`Panel tilt diagram: current ${currentAngle} degrees, optimal ${optimalAngle} degrees, efficiency ${efficiency} percent`}
-    >
-      <defs>
-        <filter id="panel-tilt-sun-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" />
-        </filter>
-      </defs>
-
-      {/* Ground line */}
-      <line
-        x1={20}
-        y1={GROUND_Y}
-        x2={280}
-        y2={GROUND_Y}
-        stroke={colors.border}
-        strokeWidth={1}
-      />
-
-      {/* Ground hatching */}
-      {Array.from({ length: 13 }, (_, i) => {
-        const x = 30 + i * 20;
-        return (
-          <line
-            key={i}
-            x1={x}
-            y1={GROUND_Y}
-            x2={x - 6}
-            y2={GROUND_Y + 6}
-            stroke="#1A1A1A"
-            strokeWidth={0.5}
-          />
-        );
-      })}
-
-      {/* Loss wedge */}
-      {diff > 0.5 && (
-        <motion.path
-          d={wedgePath(currentAngle, optimalAngle, PANEL_LENGTH * 0.9)}
-          fill={colors.red}
-          initial={{ fillOpacity: 0 }}
-          animate={{ fillOpacity: (loss / 100) * 0.4 }}
-          transition={{ duration: 0.4 }}
-        />
-      )}
-
-      {/* Sun ray dashed line */}
-      <line
-        x1={sunOrigin.x}
-        y1={sunOrigin.y}
-        x2={sunTarget.x}
-        y2={sunTarget.y}
-        stroke={colors.amber}
-        strokeWidth={1}
-        strokeDasharray="3 3"
-      />
-
-      {/* Sun icon */}
-      <circle
-        cx={sunOrigin.x}
-        cy={sunOrigin.y}
-        r={8}
-        fill={colors.amber}
-        style={{ filter: "url(#panel-tilt-sun-glow)" }}
-      />
-      <circle
-        cx={sunOrigin.x}
-        cy={sunOrigin.y}
-        r={5}
-        fill={colors.amber}
-      />
-      {/* Sun rays */}
-      {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => {
-        const rad = a * DEG_TO_RAD;
-        return (
-          <line
-            key={a}
-            x1={sunOrigin.x + 10 * Math.cos(rad)}
-            y1={sunOrigin.y + 10 * Math.sin(rad)}
-            x2={sunOrigin.x + 14 * Math.cos(rad)}
-            y2={sunOrigin.y + 14 * Math.sin(rad)}
-            stroke={colors.amber}
-            strokeWidth={1}
-            strokeLinecap="round"
-          />
-        );
-      })}
-
-      {/* Optimal line (dashed cyan) */}
-      <line
-        x1={PIVOT.x}
-        y1={PIVOT.y}
-        x2={optEnd.x}
-        y2={optEnd.y}
-        stroke={colors.cyan}
-        strokeWidth={1.5}
-        strokeDasharray="6 4"
-      />
-
-      {/* Cyan triangle tip */}
-      <polygon
-        points={`${tipEnd.x},${tipEnd.y} ${tipLeft.x},${tipLeft.y} ${tipRight.x},${tipRight.y}`}
-        fill={colors.cyan}
-        opacity={0.7}
-      />
-
-      {/* Panel body (animated rotation from pivot) */}
-      <motion.g
-        initial={{ rotate: 0 }}
-        animate={{ rotate: -currentAngle }}
-        transition={gaugeTokens.needleSpring}
-        style={{ transformOrigin: `${PIVOT.x}px ${PIVOT.y}px` }}
-      >
-        {/* Panel rectangle drawn at 0 degrees (horizontal right from pivot) */}
-        <rect
-          x={PIVOT.x}
-          y={PIVOT.y - PANEL_THICKNESS / 2}
-          width={PANEL_LENGTH}
-          height={PANEL_THICKNESS}
-          rx={2}
-          fill={colors.textPrimary}
-          stroke={colors.textPrimary}
-          strokeWidth={0.5}
-        />
-        {/* Panel edge highlight */}
-        <line
-          x1={PIVOT.x}
-          y1={PIVOT.y - PANEL_THICKNESS / 2}
-          x2={PIVOT.x + PANEL_LENGTH}
-          y2={PIVOT.y - PANEL_THICKNESS / 2}
-          stroke="rgba(255,255,255,0.4)"
-          strokeWidth={0.5}
-        />
-        {/* Panel segments (visual detail) */}
-        {[0.25, 0.5, 0.75].map((frac) => (
-          <line
-            key={frac}
-            x1={PIVOT.x + PANEL_LENGTH * frac}
-            y1={PIVOT.y - PANEL_THICKNESS / 2}
-            x2={PIVOT.x + PANEL_LENGTH * frac}
-            y2={PIVOT.y + PANEL_THICKNESS / 2}
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth={0.5}
-          />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+      <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", maxWidth: width, height: "auto" }}>
+        {/* Ground */}
+        <line x1={20} y1={pivotY} x2={width - 20} y2={pivotY} stroke="#1E1E1E" strokeWidth={1} />
+        {Array.from({ length: 8 }, (_, i) => (
+          <line key={i} x1={30 + i * 28} y1={pivotY} x2={24 + i * 28} y2={pivotY + 5} stroke="#1A1A1A" strokeWidth={0.5} />
         ))}
-      </motion.g>
 
-      {/* Pivot point */}
-      <circle
-        cx={PIVOT.x}
-        cy={PIVOT.y}
-        r={4}
-        fill={colors.textPrimary}
-      />
-      <circle
-        cx={PIVOT.x}
-        cy={PIVOT.y}
-        r={2}
-        fill={colors.bgDeep}
-      />
+        {/* Sun ray */}
+        <line x1={sunX} y1={sunY}
+          x2={pivotX + panelLen * 0.4 * Math.cos(currentAngle * DEG)}
+          y2={pivotY - panelLen * 0.4 * Math.sin(currentAngle * DEG)}
+          stroke={colors.amber} strokeWidth={1} strokeDasharray="4 3" opacity={0.4}
+        />
 
-      {/* Angle difference arc + label */}
-      {diff > 0.5 && (
-        <>
-          {/* Small arc between the two angles */}
-          <path
-            d={arcBetween(currentAngle, optimalAngle, 40)}
-            fill="none"
-            stroke={lossColor}
-            strokeWidth={1}
-            opacity={0.6}
-          />
-          {/* Difference label — offset to avoid overlapping lines */}
-          <text
-            x={arcLabelPos.x + labelOffset.x}
-            y={arcLabelPos.y + labelOffset.y}
-            textAnchor="start"
-            dominantBaseline="middle"
-            style={{
-              fontSize: 9,
-              fontFamily: fonts.mono,
-              fill: lossColor,
-              userSelect: "none",
-            }}
-          >
-            {diff.toFixed(1)}{"\u00B0"}
-          </text>
-        </>
-      )}
+        {/* Sun */}
+        <circle cx={sunX} cy={sunY} r={7} fill={colors.amber} />
+        {Array.from({ length: 8 }, (_, i) => {
+          const a = i * 45 * DEG;
+          return <line key={i} x1={sunX + 11 * Math.cos(a)} y1={sunY + 11 * Math.sin(a)} x2={sunX + 15 * Math.cos(a)} y2={sunY + 15 * Math.sin(a)} stroke={colors.amber} strokeWidth={0.8} opacity={0.3} />;
+        })}
 
-      {/* Data strip — inside the extended viewBox */}
-      <foreignObject x={0} y={175} width={300} height={48}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "8px 20px 0",
-            alignItems: "baseline",
-          }}
-        >
-          <span
-            style={{
-              fontSize: 11,
-              fontFamily: fonts.mono,
-              color: colors.textPrimary,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            Panel:{" "}
-            <AnimatedNumber value={currentAngle} decimals={1} />
-          </span>
-          <span
-            style={{
-              fontSize: 11,
-              fontFamily: fonts.mono,
-              color: colors.cyan,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            Ideal:{" "}
-            <AnimatedNumber value={optimalAngle} decimals={1} />
-          </span>
-          <span
-            style={{
-              fontSize: 11,
-              fontFamily: fonts.mono,
-              color: lossColor,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            Loss:{" "}
-            <AnimatedNumber value={loss} decimals={1} />%
-          </span>
-        </div>
-      </foreignObject>
-    </svg>
+        {/* Ideal line (cyan dashed) */}
+        <line x1={pivotX} y1={pivotY} x2={iEndX} y2={iEndY} stroke={colors.cyan} strokeWidth={1.5} strokeDasharray="5 3" opacity={0.5} />
+
+        {/* Panel (white, animated) */}
+        <motion.line
+          x1={pivotX} y1={pivotY}
+          animate={{ x2: pEndX, y2: pEndY }}
+          transition={{ type: "spring", stiffness: 120, damping: 18 }}
+          stroke="#fff" strokeWidth={4} strokeLinecap="round"
+        />
+
+        {/* Pivot */}
+        <circle cx={pivotX} cy={pivotY} r={3.5} fill="#fff" stroke="#000" strokeWidth={1.5} />
+
+        {/* Angle arc */}
+        {angleDiff > 0.5 && (() => {
+          const r = 30;
+          const a1 = Math.min(currentAngle, optimalAngle);
+          const a2 = Math.max(currentAngle, optimalAngle);
+          const x1 = pivotX + r * Math.cos(a1 * DEG);
+          const y1 = pivotY - r * Math.sin(a1 * DEG);
+          const x2 = pivotX + r * Math.cos(a2 * DEG);
+          const y2 = pivotY - r * Math.sin(a2 * DEG);
+          const midA = (a1 + a2) / 2;
+          return (
+            <>
+              <path d={`M ${x1} ${y1} A ${r} ${r} 0 0 0 ${x2} ${y2}`} fill="none" stroke={lossColor} strokeWidth={1} opacity={0.5} />
+              <text
+                x={pivotX + (r + 10) * Math.cos(midA * DEG)}
+                y={pivotY - (r + 10) * Math.sin(midA * DEG) + 3}
+                textAnchor="middle"
+                style={{ fontSize: 8, fontFamily: fonts.mono, fill: lossColor }}
+              >
+                {angleDiff.toFixed(0)}°
+              </text>
+            </>
+          );
+        })()}
+
+        {/* Data labels */}
+        <text x={pivotX - 5} y={pivotY + 18} style={{ fontSize: 10, fontFamily: fonts.mono, fill: "#fff" }}>
+          Panel: {currentAngle.toFixed(1)}°
+        </text>
+        <text x={pivotX + 75} y={pivotY + 18} style={{ fontSize: 10, fontFamily: fonts.mono, fill: colors.cyan }}>
+          Ideal: {optimalAngle.toFixed(1)}°
+        </text>
+        <text x={pivotX + 150} y={pivotY + 18} style={{ fontSize: 10, fontFamily: fonts.mono, fill: lossColor }}>
+          {lossPercent.toFixed(1)}%
+        </text>
+      </svg>
+    </div>
   );
 }
