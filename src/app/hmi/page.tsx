@@ -4,6 +4,7 @@ import { PanelTilt } from "@/components/hmi/panel-tilt";
 import { MiniGauge } from "@/components/hmi/mini-gauge";
 import { EfficiencyDonut } from "@/components/hmi/efficiency-donut";
 import { HarvestCurve } from "@/components/hmi/harvest-curve";
+import { AnnualWheel } from "@/components/hmi/annual-wheel";
 import StatusBar from "@/components/hmi/status-bar";
 import { AnimatedNumber } from "@/components/shared/animated-number";
 import { useSensorSimulation } from "@/hooks/use-sensor-simulation";
@@ -102,7 +103,7 @@ export function HMIDashboard() {
           </div>
 
           {/* Right: Harvest Curve (replaces old sparkline) */}
-          <Card style={{ padding: 10, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <Card style={{ padding: 10, minHeight: 140, display: "flex", flexDirection: "column" }}>
             <HarvestCurve
               history={history}
               nominalPower={nominalPower}
@@ -123,29 +124,9 @@ export function HMIDashboard() {
             <EfficiencyDonut efficiency={solar.efficiency} angleLoss={solar.loss} cloudLoss={3} size={130} />
           </Card>
 
-          {/* Monthly Compact 6x2 */}
-          <Card style={{ padding: 10 }}>
-            <span style={{ ...typography.label, display: "block", marginBottom: 6, fontSize: 9 }}>Angulos anuales</span>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 3 }}>
-              {solar.months.map((m, i) => {
-                const isCurr = i === currentMonth;
-                return (
-                  <div key={i} style={{
-                    textAlign: "center", padding: "4px 0", borderRadius: 4,
-                    background: isCurr ? `${colors.cyan}15` : "transparent",
-                    border: isCurr ? `1px solid ${colors.cyan}40` : "1px solid transparent",
-                  }}>
-                    <div style={{ fontSize: 7, color: isCurr ? colors.cyan : colors.textTertiary, fontWeight: 700 }}>
-                      {m.month.slice(0, 3).toUpperCase()}
-                    </div>
-                    <div style={{ fontSize: 12, fontWeight: 200, fontFamily: fonts.mono, color: isCurr ? colors.textPrimary : colors.textSecondary }}>
-                      {Math.abs(m.angle).toFixed(0)}°
-                    </div>
-                    <div style={{ fontSize: 6, color: colors.textTertiary }}>{m.direction.slice(0, 1)}</div>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Annual Angle Wheel */}
+          <Card style={{ padding: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <AnnualWheel months={solar.months} currentMonth={currentMonth} size={150} />
           </Card>
 
           {/* Savings Ticker */}
@@ -184,6 +165,8 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
       border: `1px solid ${colors.border}`,
       borderRadius: 10,
       padding: 12,
+      display: "flex",
+      flexDirection: "column",
       ...style,
     }}>
       {children}

@@ -161,7 +161,7 @@ export default function SunArc({
         />
 
         {/* Arc filled (sunrise to current position) */}
-        {!isNight && filledPath && (
+        {showSunDot && filledPath && (
           <motion.path
             d={filledPath}
             fill="none"
@@ -243,8 +243,8 @@ export default function SunArc({
           />
         )}
 
-        {/* Current data label (day only) */}
-        {!isNight && (
+        {/* Current data label (day only, same gate as sun dot) */}
+        {showSunDot && (
           <g>
             <text
               x={labelX}
@@ -324,17 +324,19 @@ export default function SunArc({
           fill={colors.border}
         />
 
-        {/* Harvest bar fill */}
-        <motion.rect
-          x={BAR_LEFT}
-          y={BAR_Y}
-          height={BAR_HEIGHT}
-          rx={2}
-          fill={`url(#${HARVEST_GRADIENT_ID})`}
-          initial={{ width: 0 }}
-          animate={{ width: BAR_WIDTH * harvestRatio }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        />
+        {/* Harvest bar fill (hidden when ratio negligible to avoid rx artifact) */}
+        {harvestRatio >= 0.01 && (
+          <motion.rect
+            x={BAR_LEFT}
+            y={BAR_Y}
+            height={BAR_HEIGHT}
+            rx={2}
+            fill={`url(#${HARVEST_GRADIENT_ID})`}
+            initial={{ width: 0 }}
+            animate={{ width: BAR_WIDTH * harvestRatio }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          />
+        )}
 
         {/* Harvest label left (harvested) */}
         <text

@@ -79,7 +79,7 @@ export function HarvestCurve({
   const gradientId = "harvest-curve-fill";
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 100 }}>
+    <div style={{ position: "relative", width: "100%", flex: 1, minHeight: 120 }}>
       {/* Header labels */}
       <div
         style={{
