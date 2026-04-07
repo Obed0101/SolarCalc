@@ -79,7 +79,7 @@ export function HarvestCurve({
   const gradientId = "harvest-curve-fill";
 
   return (
-    <div style={{ position: "relative", width: "100%", height: 140 }}>
+    <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 100 }}>
       {/* Header labels */}
       <div
         style={{
@@ -107,7 +107,7 @@ export function HarvestCurve({
         {harvestedKwh.toFixed(2)} / {expectedKwh.toFixed(2)} kWh
       </div>
 
-      <ResponsiveContainer width="100%" height={140}>
+      <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 20, right: 4, bottom: 0, left: 4 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
