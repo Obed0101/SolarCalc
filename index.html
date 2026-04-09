@@ -1156,10 +1156,6 @@
 
         <!-- SCREENSHOTS CAROUSEL -->
         <section id="screenshots" style="padding: 60px 5vw 40px; position: relative; z-index: 10;">
-            <div style="text-align: center; margin-bottom: 32px;">
-                <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px;">Mas que una calculadora</div>
-                <h2 style="font-size: clamp(24px, 3.5vw, 40px); font-weight: 200; letter-spacing: -1px; color: var(--text);">Dashboard, IA, Estadisticas y Clima Real</h2>
-            </div>
             <div class="carousel-track" id="carousel">
                 <div class="carousel-slide"><img src="screenshots/dashboard.png" alt="Dashboard HMI"></div>
                 <div class="carousel-slide"><img src="screenshots/stats-1.png" alt="Estadisticas"></div>
@@ -1167,6 +1163,10 @@
                 <div class="carousel-slide"><img src="screenshots/settings.png" alt="Configuracion"></div>
             </div>
             <div class="carousel-dots" id="carousel-dots"></div>
+            <div style="text-align: center; margin-top: 40px;">
+                <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px;">Mas que una calculadora</div>
+                <h2 style="font-size: clamp(24px, 3.5vw, 40px); font-weight: 200; letter-spacing: -1px; color: var(--text);">Dashboard, IA, Estadisticas y Clima Real</h2>
+            </div>
         </section>
 
         <!-- FEATURE 1: Math -->
@@ -1777,7 +1777,6 @@
         if (!track || !dotsContainer) return;
         const slides = track.querySelectorAll('.carousel-slide');
         let current = 0;
-        let autoTimer;
 
         // Create dots
         slides.forEach((_, i) => {
@@ -1793,14 +1792,6 @@
             dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
                 d.classList.toggle('active', i === idx);
             });
-            resetAuto();
-        }
-
-        function next() { goTo((current + 1) % slides.length); }
-
-        function resetAuto() {
-            clearInterval(autoTimer);
-            autoTimer = setInterval(next, 4000);
         }
 
         // Sync dots on manual scroll
@@ -1824,8 +1815,6 @@
                 }
             }, 100);
         });
-
-        resetAuto();
     })();
     </script>
 </body>
