@@ -967,6 +967,60 @@
         @media (max-width: 480px) {
             .hero-stats { flex-direction: column; gap: 1rem; }
         }
+
+        /* ====== CAROUSEL ====== */
+        .carousel-track {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 0 2vw;
+        }
+        .carousel-track::-webkit-scrollbar { display: none; }
+        .carousel-slide {
+            flex: 0 0 min(85vw, 900px);
+            scroll-snap-align: center;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--card);
+            transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+            position: relative;
+        }
+        .carousel-slide:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 60px rgba(255,255,255,0.04);
+            border-color: var(--border-hover);
+        }
+        .carousel-slide img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-hover);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+        .carousel-dot.active {
+            background: var(--cyan);
+            width: 24px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -1098,6 +1152,21 @@
                 <span>Scroll</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
             </div>
+        </section>
+
+        <!-- SCREENSHOTS CAROUSEL -->
+        <section id="screenshots" style="padding: 80px 5vw; position: relative; z-index: 10;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cyan); margin-bottom: 12px;">La App en Accion</div>
+                <h2 style="font-size: clamp(28px, 4vw, 48px); font-weight: 200; letter-spacing: -2px; color: var(--text);">Dashboard HMI Industrial</h2>
+            </div>
+            <div class="carousel-track" id="carousel">
+                <div class="carousel-slide"><img src="screenshots/dashboard.png" alt="Dashboard HMI" loading="lazy"></div>
+                <div class="carousel-slide"><img src="screenshots/stats-1.png" alt="Estadisticas" loading="lazy"></div>
+                <div class="carousel-slide"><img src="screenshots/stats-2.png" alt="Ahorro y Radiacion" loading="lazy"></div>
+                <div class="carousel-slide"><img src="screenshots/settings.png" alt="Configuracion" loading="lazy"></div>
+            </div>
+            <div class="carousel-dots" id="carousel-dots"></div>
         </section>
 
         <!-- FEATURE 1: Math -->
@@ -1699,6 +1768,65 @@
                 document.exitFullscreen();
             }
         }
+    </script>
+    <script>
+    // Carousel auto-slide
+    (function() {
+        const track = document.getElementById('carousel');
+        const dotsContainer = document.getElementById('carousel-dots');
+        if (!track || !dotsContainer) return;
+        const slides = track.querySelectorAll('.carousel-slide');
+        let current = 0;
+        let autoTimer;
+
+        // Create dots
+        slides.forEach((_, i) => {
+            const dot = document.createElement('button');
+            dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => goTo(i);
+            dotsContainer.appendChild(dot);
+        });
+
+        function goTo(idx) {
+            current = idx;
+            slides[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
+                d.classList.toggle('active', i === idx);
+            });
+            resetAuto();
+        }
+
+        function next() { goTo((current + 1) % slides.length); }
+
+        function resetAuto() {
+            clearInterval(autoTimer);
+            autoTimer = setInterval(next, 4000);
+        }
+
+        // Sync dots on manual scroll
+        let scrollTimeout;
+        track.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const trackRect = track.getBoundingClientRect();
+                const center = trackRect.left + trackRect.width / 2;
+                let closest = 0, closestDist = Infinity;
+                slides.forEach((s, i) => {
+                    const r = s.getBoundingClientRect();
+                    const dist = Math.abs(r.left + r.width / 2 - center);
+                    if (dist < closestDist) { closestDist = dist; closest = i; }
+                });
+                if (closest !== current) {
+                    current = closest;
+                    dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
+                        d.classList.toggle('active', i === closest);
+                    });
+                }
+            }, 100);
+        });
+
+        resetAuto();
+    })();
     </script>
 </body>
 </html>
