@@ -8,6 +8,8 @@ import {
   Settings2,
   Sun,
   Gauge,
+  BarChart3,
+  Bot,
 } from "lucide-react";
 import { transitions } from "@/lib/motion";
 
@@ -17,6 +19,7 @@ const navItems = [
   { to: "/weather", icon: CloudSun, label: "Clima" },
   { to: "/sensors", icon: Zap, label: "Energía" },
   { to: "/control", icon: Gauge, label: "Servo" },
+  { to: "/stats", icon: BarChart3, label: "Stats" },
 ] as const;
 
 export function Sidebar() {
@@ -28,7 +31,7 @@ export function Sidebar() {
         width: 56,
         height: "100vh",
         background: "#000",
-        borderRight: "1px solid #1a1a1a",
+        borderRight: "1px solid #1E1E1E",
         flexShrink: 0,
         position: "sticky",
         top: 0,
@@ -42,7 +45,7 @@ export function Sidebar() {
           alignItems: "center",
           justifyContent: "center",
           height: 48,
-          borderBottom: "1px solid #1a1a1a",
+          borderBottom: "1px solid #1E1E1E",
         }}
       >
         <Sun size={18} color="#FFB800" />

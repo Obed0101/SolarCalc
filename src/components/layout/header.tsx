@@ -24,7 +24,7 @@ export function Header({
         justifyContent: "space-between",
         height: 44,
         padding: "0 24px",
-        borderBottom: "1px solid #1a1a1a",
+        borderBottom: "1px solid #1E1E1E",
         background: "rgba(0,0,0,0.6)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",

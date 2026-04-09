@@ -36,10 +36,14 @@ export function MiniGauge({
 }: MiniGaugeProps) {
   const { semiTrackWidth, semiArcWidth } = gaugeTokens;
   const svgWidth = size;
-  const svgHeight = size * 0.7;
+  const svgHeight = size * 0.65;
   const cx = svgWidth / 2;
-  const cy = svgHeight - 8;
-  const radius = size * 0.35;
+  const cy = svgHeight - 4;
+  const radius = size * 0.32;
+
+  // Adaptive font sizing based on gauge size
+  const numFontSize = Math.max(14, Math.min(26, size * 0.18));
+  const unitFontSize = Math.max(9, Math.min(14, size * 0.1));
 
   // 180-degree arc: from 180 (left) to 360 (right), open at bottom
   const arcStartDeg = 180;
@@ -52,7 +56,7 @@ export function MiniGauge({
   const activeLength = circumference * fraction;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
       <svg
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         style={{ width: svgWidth, height: svgHeight, display: "block" }}
@@ -91,12 +95,12 @@ export function MiniGauge({
           }}
         />
 
-        {/* Center number */}
+        {/* Center number — positioned below the arc with gap */}
         <foreignObject
           x={0}
-          y={cy - 22}
+          y={cy - 18}
           width={svgWidth}
-          height={26}
+          height={30}
         >
           <div
             style={{
@@ -108,7 +112,7 @@ export function MiniGauge({
           >
             <span
               style={{
-                fontSize: 18,
+                fontSize: numFontSize,
                 fontWeight: 200,
                 fontFamily: fonts.mono,
                 fontVariantNumeric: "tabular-nums",
@@ -118,7 +122,7 @@ export function MiniGauge({
             >
               <AnimatedNumber value={value} decimals={value % 1 !== 0 ? 1 : 0} />
             </span>
-            <span style={{ fontSize: 12, fontWeight: 300, color: colors.textSecondary }}>
+            <span style={{ fontSize: unitFontSize, fontWeight: 300, color: colors.textSecondary }}>
               {unit}
             </span>
           </div>

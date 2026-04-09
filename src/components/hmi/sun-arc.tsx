@@ -184,19 +184,21 @@ export default function SunArc({
           strokeWidth="1"
           style={{ opacity: isNight ? 0.2 : 0.5 }}
         />
-        <text
-          x={noonPos.x}
-          y={noonPos.y - 12}
-          textAnchor="middle"
-          style={{
-            fontSize: 9,
-            fontFamily: fonts.mono,
-            fill: isNight ? "#333" : colors.textTertiary,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {peakWatts}W pk
-        </text>
+        {!isNight && (
+          <text
+            x={noonPos.x}
+            y={noonPos.y - 12}
+            textAnchor="middle"
+            style={{
+              fontSize: 9,
+              fontFamily: fonts.mono,
+              fill: colors.textTertiary,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {peakWatts}W pk
+          </text>
+        )}
 
         {/* Sunrise time label (above bar) */}
         <text

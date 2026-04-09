@@ -136,6 +136,7 @@ export function HarvestCurve({
             tickLine={false}
             width={28}
             tickFormatter={(v: number) => `${v}`}
+            domain={[0, (dataMax: number) => Math.max(50, Math.ceil(dataMax / 50) * 50)]}
           />
 
           {/* Theoretical bell curve -- dashed, no fill */}

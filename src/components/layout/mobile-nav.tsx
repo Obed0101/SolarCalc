@@ -6,6 +6,8 @@ import {
   CloudSun,
   Zap,
   Gauge,
+  BarChart3,
+  Bot,
 } from "lucide-react";
 import { transitions } from "@/lib/motion";
 
@@ -15,6 +17,8 @@ const navItems = [
   { to: "/weather", icon: CloudSun, label: "Clima" },
   { to: "/sensors", icon: Zap, label: "Watts" },
   { to: "/control", icon: Gauge, label: "Servo" },
+  { to: "/stats", icon: BarChart3, label: "Stats" },
+  { to: "/ai", icon: Bot, label: "IA" },
 ] as const;
 
 export function MobileNav() {
@@ -29,14 +33,13 @@ export function MobileNav() {
         background: "rgba(0,0,0,0.85)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderTop: "1px solid #1a1a1a",
+        borderTop: "1px solid #1E1E1E",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-around",
         padding: "0 8px",
         zIndex: 50,
       }}
-      className="md:hidden"
     >
       {navItems.map(({ to, icon: Icon, label }) => (
         <NavLink

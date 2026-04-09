@@ -56,9 +56,9 @@ export default function StatusBar() {
       <Divider />
 
       {/* Location */}
-      <Cell>
-        <span style={{ fontSize: 9, color: colors.textSecondary }}>{locationName}</span>
-        <span style={{ fontSize: 8, color: colors.textTertiary }}>{latitude.toFixed(2)}, {longitude.toFixed(2)}</span>
+      <Cell style={{ maxWidth: 180, overflow: "hidden" }}>
+        <span style={{ fontSize: 9, color: colors.textSecondary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{locationName}</span>
+        <span style={{ fontSize: 8, color: colors.textTertiary, whiteSpace: "nowrap" }}>{latitude.toFixed(2)}, {longitude.toFixed(2)}</span>
       </Cell>
       <Divider />
 
@@ -86,8 +86,8 @@ export default function StatusBar() {
   );
 }
 
-function Cell({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 8px" }}>{children}</div>;
+function Cell({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 8px", ...style }}>{children}</div>;
 }
 
 function Divider() {
