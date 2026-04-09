@@ -52,7 +52,7 @@
             pointer-events: none;
             transform: translate(-50%, -50%);
             transition: left 1.4s var(--ease), top 1.4s var(--ease);
-            filter: drop-shadow(0 0 80px rgba(255,255,255,0.08)) drop-shadow(0 0 160px rgba(255,255,255,0.04));
+            animation: cube-glow 4s ease-in-out infinite;
         }
         .cube-scene {
             width: 320px;
@@ -247,6 +247,10 @@
         @keyframes bounce {
             0%, 100% { transform: translateX(-50%) translateY(0); }
             50% { transform: translateX(-50%) translateY(8px); }
+        }
+        @keyframes cube-glow {
+            0%, 100% { filter: drop-shadow(0 0 80px rgba(255,255,255,0.12)) drop-shadow(0 0 160px rgba(255,255,255,0.06)); }
+            50% { filter: drop-shadow(0 0 120px rgba(255,255,255,0.2)) drop-shadow(0 0 200px rgba(255,255,255,0.1)); }
         }
 
         /* ====== FEATURES ====== */
@@ -1061,14 +1065,8 @@
         <!-- HERO -->
         <section id="hero">
             <div class="hero-content">
-                <div style="width: 80px; height: 80px; border-radius: 20px; background: radial-gradient(circle, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; filter: drop-shadow(0 0 40px rgba(255,255,255,0.1));">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFB800" stroke-width="1.5" stroke-linecap="round">
-                        <circle cx="12" cy="12" r="4"/>
-                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-                    </svg>
-                </div>
                 <div class="hero-eyebrow">Open Source Solar Tool</div>
-                <h1 class="hero-title"><strong>Solar</strong>Calc<br>Pro</h1>
+                <h1 class="hero-title"><strong>Solar</strong>Calc<br><span style="display: inline-flex; align-items: center; gap: 16px;">Pro <span style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 14px; background: radial-gradient(circle, rgba(255,184,0,0.12), rgba(255,184,0,0.03)); border: 1px solid rgba(255,184,0,0.15); vertical-align: middle;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFB800" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span></span></h1>
                 <p class="hero-sub">Optimizacion solar inteligente. IA integrada, clima real, dashboard industrial y matematicas puras en una sola herramienta.</p>
                 <div>
                     <a href="https://github.com/Obed0101/SolarCalc/releases" class="hero-cta">
