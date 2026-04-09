@@ -6,6 +6,5 @@ import { useReducedMotion as useFramerReducedMotion } from "framer-motion";
  */
 export function useReducedMotion(): boolean {
   const osPrefers = useFramerReducedMotion();
-  // TODO: Add manual toggle from settings store when available
-  return osPrefers ?? false;
+  return !!osPrefers;
 }

@@ -171,7 +171,7 @@ export function staggerDelay(index: number, base = 0.04): number {
 export function withReducedMotion<T extends Variants>(
   variants: T,
   reducedMotion: boolean,
-): T | { initial: object; animate: object; exit: object } {
+): Variants {
   if (reducedMotion) {
     return {
       initial: {},

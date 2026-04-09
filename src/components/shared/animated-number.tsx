@@ -9,8 +9,8 @@ interface AnimatedNumberProps {
 
 export function AnimatedNumber({ value, decimals = 0, duration = 800 }: AnimatedNumberProps) {
   const [display, setDisplay] = useState(0);
-  const rafRef = useRef<number>();
-  const startRef = useRef<number>();
+  const rafRef = useRef<number>(undefined);
+  const startRef = useRef<number>(undefined);
   const fromRef = useRef(0);
   const reduced = useReducedMotion();
 

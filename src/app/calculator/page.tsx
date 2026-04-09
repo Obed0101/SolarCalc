@@ -267,11 +267,11 @@ export function CalculatorPage() {
                     fontSize: 12,
                     color: "#fff",
                   }}
-                  formatter={(value: number) => [
-                    `${value.toFixed(1)}\u00B0`,
+                  formatter={(value: any) => [
+                    `${Number(value).toFixed(1)}\u00B0`,
                     "Angulo",
                   ]}
-                  labelFormatter={(label: number) => `Dia ${label}`}
+                  labelFormatter={(label: any) => `Dia ${label}`}
                 />
                 <ReferenceLine
                   y={0}
