@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#16162a"/>
+      <stop offset="100%" stop-color="#08080f"/>
+    </radialGradient>
+    <radialGradient id="sun" cx="42%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="#FFE066"/>
+      <stop offset="50%" stop-color="#FFB800"/>
+      <stop offset="100%" stop-color="#E8950A"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFB800" stop-opacity="0.25"/>
+      <stop offset="50%" stop-color="#FFB800" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#FFB800" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- Outer glow -->
+  <circle cx="256" cy="246" r="200" fill="url(#glow)"/>
+
+  <!-- 8 bold rays -->
+  <g transform="translate(256,246)" stroke-linecap="round" fill="none" stroke="#FFB800">
+    <!-- Cardinal rays (long + thick) -->
+    <line x1="0" y1="-120" x2="0" y2="-170" stroke-width="12" opacity="0.85"/>
+    <line x1="0" y1="120" x2="0" y2="170" stroke-width="12" opacity="0.85"/>
+    <line x1="-120" y1="0" x2="-170" y2="0" stroke-width="12" opacity="0.85"/>
+    <line x1="120" y1="0" x2="170" y2="0" stroke-width="12" opacity="0.85"/>
+    <!-- Diagonal rays (shorter + thinner) -->
+    <line x1="-85" y1="-85" x2="-122" y2="-122" stroke-width="10" opacity="0.55"/>
+    <line x1="85" y1="-85" x2="122" y2="-122" stroke-width="10" opacity="0.55"/>
+    <line x1="-85" y1="85" x2="-122" y2="122" stroke-width="10" opacity="0.55"/>
+    <line x1="85" y1="85" x2="122" y2="122" stroke-width="10" opacity="0.55"/>
+  </g>
+
+  <!-- Sun body -->
+  <circle cx="256" cy="246" r="88" fill="url(#sun)"/>
+
+  <!-- Specular highlight -->
+  <ellipse cx="240" cy="224" rx="40" ry="32" fill="rgba(255,255,255,0.18)"/>
+</svg>
