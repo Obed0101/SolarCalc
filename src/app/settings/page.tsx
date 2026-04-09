@@ -246,7 +246,7 @@ export function SettingsPage() {
           <ActionBtn icon={<Trash2 size={13} />} label="Limpiar datos" danger />
         </motion.div>
 
-        <motion.div variants={fadeUp} style={{ borderTop: "1px solid #1a1a1a", paddingTop: 16 }}>
+        <motion.div variants={fadeUp} style={{ borderTop: "1px solid #1E1E1E", paddingTop: 16 }}>
           <button
             onClick={() => store.updateSettings({ setupComplete: false } as any)}
             style={{ ...resetBtn }}
@@ -268,7 +268,13 @@ function NewZoneForm({ onSave, onCancel }: { onSave: (z: any) => void; onCancel:
   const [lng, setLng] = useState(-79.5);
 
   return (
-    <div style={{ marginTop: 12, padding: 16, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid #1E1E1E" }}>
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      style={{ marginTop: 12, padding: 16, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid #1E1E1E", overflow: "hidden" }}
+    >
       <div style={{ fontSize: 12, fontWeight: 500, color: "#fff", marginBottom: 12 }}>Nueva Zona Solar</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px", gap: 8 }}>
         <Field label="Nombre" value={name} onChange={setName} placeholder="Mi casa" />
@@ -286,7 +292,7 @@ function NewZoneForm({ onSave, onCancel }: { onSave: (z: any) => void; onCancel:
           Cancelar
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

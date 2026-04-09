@@ -5,17 +5,19 @@ import "leaflet/dist/leaflet.css";
 interface LocationMapProps {
   lat: number;
   lng: number;
+  zoom?: number;
   onMapClick: (lat: number, lng: number) => void;
 }
 
-// Dark monochrome tile layer — Stadia Alidade Smooth Dark (free, no key for low traffic)
-const TILE_URL = "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png";
-const TILE_ATTR = '&copy; <a href="https://stadiamaps.com/">Stadia</a>';
+// Dark monochrome tile layer — CartoDB Dark Matter (free, no key required)
+const TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+const TILE_ATTR = '&copy; <a href="https://carto.com/">CARTO</a>';
 
-export function LocationMap({ lat, lng, onMapClick }: LocationMapProps) {
+export function LocationMap({ lat, lng, zoom = 6, onMapClick }: LocationMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.CircleMarker | null>(null);
+  const ringRef = useRef<L.CircleMarker | null>(null);
 
   // Initialize map
   useEffect(() => {
@@ -23,12 +25,18 @@ export function LocationMap({ lat, lng, onMapClick }: LocationMapProps) {
 
     const map = L.map(containerRef.current, {
       center: [lat, lng],
-      zoom: 6,
+      zoom,
       zoomControl: false,
       attributionControl: false,
     });
 
+    L.control.zoom({ position: "bottomright" }).addTo(map);
     L.tileLayer(TILE_URL, { attribution: TILE_ATTR }).addTo(map);
+
+    // Dark theme for zoom controls
+    const style = document.createElement("style");
+    style.textContent = `.leaflet-control-zoom a{background:#111!important;color:#888!important;border-color:#333!important;width:28px!important;height:28px!important;line-height:28px!important;font-size:14px!important}.leaflet-control-zoom a:hover{background:#222!important;color:#fff!important}`;
+    containerRef.current.appendChild(style);
 
     // White pulsing marker
     const marker = L.circleMarker([lat, lng], {
@@ -40,12 +48,13 @@ export function LocationMap({ lat, lng, onMapClick }: LocationMapProps) {
     }).addTo(map);
 
     // Outer ring
-    L.circleMarker([lat, lng], {
+    const ring = L.circleMarker([lat, lng], {
       radius: 14,
       color: "rgba(255,255,255,0.2)",
       fillColor: "transparent",
       weight: 1,
     }).addTo(map);
+    ringRef.current = ring;
 
     map.on("click", (e: L.LeafletMouseEvent) => {
       onMapClick(e.latlng.lat, e.latlng.lng);
@@ -63,12 +72,14 @@ export function LocationMap({ lat, lng, onMapClick }: LocationMapProps) {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update marker + view when lat/lng change
+  // Update marker + view when lat/lng/zoom change
   useEffect(() => {
     if (!mapRef.current || !markerRef.current) return;
     markerRef.current.setLatLng([lat, lng]);
-    mapRef.current.setView([lat, lng], mapRef.current.getZoom(), { animate: true });
-  }, [lat, lng]);
+    if (ringRef.current) ringRef.current.setLatLng([lat, lng]);
+    const targetZoom = Math.max(zoom, mapRef.current.getZoom());
+    mapRef.current.setView([lat, lng], targetZoom, { animate: true });
+  }, [lat, lng, zoom]);
 
   return (
     <div
