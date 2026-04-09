@@ -8,6 +8,8 @@ import { CalculatorPage } from "@/app/calculator/page";
 import { WeatherPage } from "@/app/weather/page";
 import { SensorsPage } from "@/app/sensors/page";
 import { ControlPage } from "@/app/control/page";
+import { StatsPage } from "@/app/stats/page";
+import { AIPage } from "@/app/ai/page";
 import { SettingsPage } from "@/app/settings/page";
 import { OnboardingPage } from "@/app/onboarding/page";
 import { HMIDashboard } from "@/app/hmi/page";
@@ -31,6 +33,8 @@ function MobileRoutes() {
               <Route path="/weather" element={<WeatherPage />} />
               <Route path="/sensors" element={<SensorsPage />} />
               <Route path="/control" element={<ControlPage />} />
+              <Route path="/stats" element={<StatsPage />} />
+              <Route path="/ai" element={<AIPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </AnimatePresence>
